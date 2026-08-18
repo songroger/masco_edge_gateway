@@ -26,6 +26,191 @@ main.py
       └── watchdog.py       systemd READY / WATCHDOG
 ```
 
+## 全流程关系图
+
+### 启动与模块装配
+
+```text
+python3 main.py
+  │
+  ├─ setup_logging()
+  └─ CollectorService("config.json")
+        │
+        ├─ Config 加载 / 校验 config.json
+        └─ _build()
+              ├─ SQLiteStore          ← database.path
+              ├─ ModbusPort × N       ← serial_ports[]
+              ├─ GpioController       ← gpio
+              ├─ RuleEngine(ports, gpio) ← rules[]
+              ├─ Collector(ports)     ← collect + serial_ports
+              ├─ SystemdWatchdog      ← watchdog
+              └─ MQTTManager.start()  ← mqtt（后台线程收消息）
+                    │
+                    └─ service.run() 进入主循环
+```
+
+```mermaid
+flowchart TD
+  main["main.py"] --> svc["CollectorService"]
+  svc --> cfg["Config\nconfig.json"]
+  svc --> store["SQLiteStore\noutbox"]
+  svc --> ports["ModbusPort × N"]
+  svc --> gpio["GpioController"]
+  svc --> rules["RuleEngine"]
+  svc --> coll["Collector"]
+  svc --> wd["SystemdWatchdog"]
+  svc --> mqtt["MQTTManager"]
+  rules --> ports
+  rules --> gpio
+  coll --> ports
+  mqtt --> store
+```
+
+### 主循环数据流（每轮一次）
+
+中间产物在各模块间传递：
+
+| 阶段 | 调用 | 输入 | 输出 / 中间数据 |
+| --- | --- | --- | --- |
+| ① 热更新 | `_maybe_apply_remote_config` | MQTT 队列中的 config payload | 可能 `_build` 重建运行时；ACK → `config_ack_topic` |
+| ② 采集 | `Collector.collect_once` | `serial_ports` + `ModbusPort` | `data`（上报 JSON）、`values`（规则用）、`comm_status` |
+| ③ 规则 | `RuleEngine.process` | `values` + `comm_status` | `events[]`；可选 GPIO / Modbus 写 |
+| ④ 告警 | `_publish_alarms` | `events` | MQTT `alarm_topic`（失败则进 outbox） |
+| ⑤ 上报 | `MQTTManager.send_data` | `data` JSON（按 `upload_interval`） | 成功直发；失败 → SQLite outbox |
+| ⑥ 补传 | `sync_offline_data` | outbox 批次 | 成功删行；失败 `retry_count++` |
+| ⑦ 自愈 | `_health_and_recover` | SQLite / MQTT / 串口健康 | 超阈值则 recover 对应模块 |
+| ⑧ 喂狗 | `watchdog.ping` | — | systemd `WATCHDOG=1` |
+| ⑨ 休眠 | `sleep` | `collect.interval - elapsed` | 下一轮 |
+
+```mermaid
+flowchart LR
+  subgraph loop ["CollectorService.run 主循环"]
+    A["① 远程配置热加载"] --> B["② RS485 并发采集"]
+    B --> C["③ 规则引擎"]
+    C --> D["④ 告警发布"]
+    D --> E["⑤ 遥测上报 + ⑥ 离线补传"]
+    E --> F["⑦ 健康检查 / 模块恢复"]
+    F --> G["⑧ Watchdog 喂狗"]
+    G --> H["⑨ sleep 到 collect.interval"]
+    H --> A
+  end
+```
+
+### 采集链路：寄存器 → 测点值
+
+```text
+Collector.collect_once()
+  │  每路 RS485 提交到 ThreadPoolExecutor（多口并发）
+  ▼
+ModbusPort._collect_port / read_registers
+  │  同口多从站串行；相邻寄存器按 batch_max_gap/count 批量读
+  ▼
+decode.decode_registers + scale_value
+  │  字节序 / 数据类型 → raw → value * scale + offset
+  ▼
+三路结果汇总回主线程：
+  ├─ values[source] = float/int
+  │     source = "端口名:从站号:参数名"   ← 给规则引擎
+  ├─ data = {
+  │     device_id, timestamp, datetime,
+  │     data: { source: {value, unit}, ... },
+  │     comm: { source|device|port: "ok"|"fail" }
+  │   }                                   ← 给 MQTT 上报
+  └─ comm_status[source|device|port] = bool  ← 给规则 / 健康检查
+```
+
+```mermaid
+flowchart TD
+  CO["Collector.collect_once"] --> TP["ThreadPoolExecutor\n每口一个任务"]
+  TP --> MP["ModbusPort\nensure_connected / read_registers"]
+  MP --> DEC["decode_registers\n+ scale / offset"]
+  DEC --> V["values\n测点 → 数值"]
+  DEC --> D["data\n上报 JSON 骨架"]
+  DEC --> CS["comm_status\nok / fail"]
+  V --> RE["RuleEngine"]
+  CS --> RE
+  D --> MQ["MQTTManager.send_data"]
+  CS --> HR["健康检查 / RS485 恢复"]
+```
+
+### 规则与关断：测点 → 告警 / GPIO / Modbus
+
+```text
+RuleEngine.process(values, comm_status)
+  │
+  ├─ threshold：compare(values[source], op, threshold)
+  ├─ comm_fail：comm_status[source] is False
+  │
+  ├─ 连续 matched >= consecutive 且未 triggered
+  │     ├─ execute_action
+  │     │     ├─ gpio / dual  → GpioController.set_line(line, value)
+  │     │     └─ modbus_write / dual → ModbusPort.write_register(...)
+  │     └─ 生成 event{name, type, source, value, severity, ...}
+  │
+  └─ 条件恢复 → 计数清零，允许再次触发
+
+events → service._publish_alarms → MQTT alarm_topic
+         （失败同样走 send_data → SQLite outbox）
+```
+
+### 上报与离线补传：payload → Broker / SQLite
+
+```text
+                    ┌── 已连接 ──► MQTT Broker（topic / alarm_topic / ack）
+send_data(topic, payload)
+                    └── 未连接 / 失败 ──► SQLiteStore.save
+                                              │
+sync_offline_data() ◄── 每轮只要 MQTT 可用就拉一批
+  │  FIFO：get_batch → publish → delete
+  │  失败：increase_retry；超过 max_retry 丢弃
+  └─ 超过 max_records 删最旧行
+```
+
+```mermaid
+flowchart TD
+  payload["telemetry / alarm / ack payload"] --> SD["MQTTManager.send_data"]
+  SD -->|connected| BR["MQTT Broker"]
+  SD -->|fail / offline| OB["SQLite outbox"]
+  OB --> SYNC["sync_offline_data\n每轮尝试补传"]
+  SYNC -->|publish ok| DEL["delete 行"]
+  SYNC -->|publish fail| RET["retry_count++"]
+  RET -->|>= max_retry| DROP["丢弃毒消息"]
+```
+
+### 远程配置热更新（旁路，插在主循环①）
+
+```text
+云端 / 运维
+  │  publish → mqtt.config_topic
+  ▼
+MQTTManager.on_message ──► _config_queue（只入队，不重建）
+  │
+  ▼ 主循环 poll_config()
+Config.apply_remote（replace / patch，写回 config.json）
+  │
+  ├─ DB path 未变 → 复用 SQLiteStore
+  ├─ MQTT signature 未变 → 复用 MQTT 连接
+  └─ 其余（ports / gpio / rules / collector）按新配置 _build
+  │
+  └─ publish_ack → config_ack_topic
+```
+
+### 异常与自愈关系
+
+```text
+主循环每步 try/except 隔离，单步失败不退出进程：
+
+  采集失败 ──► recover_executor + _recover_rs485
+  上报失败 ──► _recover_mqtt + _recover_sqlite
+  健康检查 ──► 连续不健康达到 watchdog.*_restart_after
+                 ├─ SQLite → store.recover / 重建
+                 ├─ MQTT   → mqtt.restart（保留待处理配置队列）
+                 └─ RS485  → 关旧口、建新 ModbusPort、回写 collector/rules
+
+进程卡死 / 退出 ──► systemd WatchdogSec 拉起整个服务
+Ctrl+C / stop() ──► watchdog.stopping + _close_runtime
+```
+
 ## 功能
 
 ### 配置与启动
