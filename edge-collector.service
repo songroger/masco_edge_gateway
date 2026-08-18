@@ -1,0 +1,16 @@
+[Unit]
+Description=Industrial Edge Collector
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/edge_collector
+ExecStart=/usr/bin/python3 /opt/edge_collector/main.py
+Restart=always
+RestartSec=5
+User=root
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

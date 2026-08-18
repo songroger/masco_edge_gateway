@@ -1,0 +1,143 @@
+{
+  "device_id": "EDGE_001",
+
+  "mqtt": {
+    "host": "192.168.1.100",
+    "port": 1883,
+    "username": "iot",
+    "password": "123456",
+    "client_id": "EDGE_001",
+    "topic": "iot/device/EDGE_001/data",
+    "offline_sync_batch": 100,
+    "keepalive": 60
+  },
+
+  "database": {
+    "path": "./edge_collector.db",
+    "max_records": 100000
+  },
+
+  "collect": {
+    "interval": 10,
+    "upload_interval": 60,
+    "request_timeout": 2,
+    "retry": 2
+  },
+
+  "serial_ports": [
+    {
+      "name": "RS485_1",
+      "port": "/dev/ttyS3",
+      "baudrate": 9600,
+      "bytesize": 8,
+      "parity": "N",
+      "stopbits": 1,
+
+      "devices": [
+        {
+          "slave_id": 1,
+          "parameters": [
+            {
+              "name": "temperature",
+              "address": 0,
+              "register_type": "holding",
+              "data_type": "int16",
+              "scale": 0.1,
+              "unit": "℃"
+            },
+            {
+              "name": "humidity",
+              "address": 1,
+              "register_type": "holding",
+              "data_type": "uint16",
+              "scale": 0.1,
+              "unit": "%"
+            },
+            {
+              "name": "voltage",
+              "address": 2,
+              "register_type": "holding",
+              "data_type": "uint16",
+              "scale": 0.1,
+              "unit": "V"
+            },
+            {
+              "name": "current",
+              "address": 3,
+              "register_type": "holding",
+              "data_type": "uint16",
+              "scale": 0.01,
+              "unit": "A"
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "name": "RS485_2",
+      "port": "/dev/ttyS4",
+      "baudrate": 9600,
+      "bytesize": 8,
+      "parity": "N",
+      "stopbits": 1,
+
+      "devices": [
+        {
+          "slave_id": 1,
+          "parameters": [
+            {
+              "name": "power",
+              "address": 0,
+              "register_type": "holding",
+              "data_type": "uint32",
+              "scale": 0.1,
+              "unit": "W"
+            },
+            {
+              "name": "energy",
+              "address": 2,
+              "register_type": "holding",
+              "data_type": "uint32",
+              "scale": 0.01,
+              "unit": "kWh"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+
+  "rules": [
+    {
+      "name": "high_temperature_shutdown",
+      "source": "RS485_1:1:temperature",
+      "operator": ">=",
+      "threshold": 80,
+      "consecutive": 3,
+      "action": {
+        "type": "modbus_write",
+        "port": "RS485_1",
+        "slave_id": 1,
+        "register_type": "holding",
+        "address": 100,
+        "value": 0
+      }
+    },
+    {
+      "name": "over_current_shutdown",
+      "source": "RS485_1:1:current",
+      "operator": ">",
+      "threshold": 20,
+      "consecutive": 2,
+      "action": {
+        "type": "modbus_write",
+        "port": "RS485_1",
+        "slave_id": 1,
+        "register_type": "holding",
+        "address": 101,
+        "value": 0
+      }
+    }
+  ]
+}
