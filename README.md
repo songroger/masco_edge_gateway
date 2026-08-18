@@ -28,6 +28,53 @@ main.py
 
 ## 全流程关系图
 
+### 和主流程的关系（简图）
+
+```mermaid
+flowchart TD
+  M[main.py 启动] --> S[CollectorService 装配模块]
+  S --> R[watchdog.ready / run 主循环]
+
+  R --> C1{MQTT 有远程配置?}
+  C1 -->|是| C2[Config.apply_remote + _build 热加载]
+  C2 --> C3[publish_ack]
+  C3 --> COL
+  C1 -->|否| COL
+
+  COL[Collector.collect_once] --> DEC[ModbusPort 读寄存器]
+  DEC --> PARSE[decode + scale/offset]
+  PARSE --> OUT["产出 values / data / comm_status"]
+
+  OUT --> RE[RuleEngine.process]
+  RE --> COND{条件连续成立且未触发?}
+  COND -->|否| RESET[计数清零 / 可再次触发]
+  RESET --> ALARM_SKIP[无新事件]
+  COND -->|是| ACT[execute_action]
+  ACT --> AT{action.type}
+  AT -->|gpio / dual| GPIO[GpioController.set_line]
+  AT -->|modbus_write / dual| MW[ModbusPort.write_register]
+  AT -->|任意含告警| EVT[生成 alarm 事件]
+  GPIO --> EVT
+  MW --> EVT
+  ALARM_SKIP --> UP
+  EVT --> PUB[MQTT 发布 alarm_topic]
+  PUB --> UP
+
+  UP{到达 upload_interval?}
+  UP -->|是| SD[MQTTManager.send_data 遥测]
+  UP -->|否| SYNC
+  SD --> OK{MQTT 已连接?}
+  OK -->|是| BR[发往 Broker]
+  OK -->|否| OB[SQLite outbox 缓存]
+  BR --> SYNC
+  OB --> SYNC
+
+  SYNC[sync_offline_data 补传] --> HC[_health_and_recover]
+  HC --> WD[watchdog.ping 喂狗]
+  WD --> SL[sleep 到 collect.interval]
+  SL --> R
+```
+
 ### 启动与模块装配
 
 ```text
