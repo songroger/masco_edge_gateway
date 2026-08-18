@@ -6,6 +6,7 @@ build/
 dist/
 .env
 *.toml
+*.pyc
 .vscode/
 edge_collector.db*
 main.spec
