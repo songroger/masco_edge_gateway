@@ -1,5 +1,5 @@
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, wait
 from datetime import datetime
 
 from .decode import decode_registers, register_count, scale_value
@@ -56,7 +56,25 @@ class Collector:
         )
 
     def close(self):
-        self.executor.shutdown(wait=False)
+        try:
+            self.executor.shutdown(wait=False)
+        except Exception:
+            pass
+
+    def recover_executor(self):
+        self.close()
+        workers = max(1, len(self.ports))
+        self.executor = ThreadPoolExecutor(
+            max_workers=workers,
+            thread_name_prefix="rs485",
+        )
+        logger.warning("RS485 collector thread pool recreated")
+
+    def collect_timeout(self):
+        timeout = float(self.config.collect.get("request_timeout", 2))
+        retry = max(0, self.retry)
+        ports = max(1, len(self.config.serial_ports))
+        return max(8.0, timeout * (retry + 1) * 8 + ports)
 
     def collect_once(self):
         timestamp = int(time.time())
@@ -69,20 +87,35 @@ class Collector:
         }
         values = {}
         comm_status = {}
-        futures = []
+        future_map = {}
         for port_config in self.config.serial_ports:
             port = self.ports.get(port_config["name"])
             if not port:
+                comm_status.update(self._mark_port_failed(port_config))
                 continue
-            futures.append(
-                self.executor.submit(self._collect_port, port, port_config)
-            )
+            future_map[self.executor.submit(self._collect_port, port, port_config)] = port_config
 
-        for future in as_completed(futures):
+        timeout = self.collect_timeout()
+        if future_map:
+            done, pending = wait(future_map.keys(), timeout=timeout)
+        else:
+            done, pending = set(), set()
+        for future in pending:
+            port_config = future_map[future]
+            logger.error("%s collect timeout after %ss", port_config["name"], timeout)
+            future.cancel()
+            port = self.ports.get(port_config["name"])
+            if port:
+                port.connected = False
+            comm_status.update(self._mark_port_failed(port_config))
+
+        for future in done:
+            port_config = future_map[future]
             try:
                 port_values, port_data, port_comm = future.result()
             except Exception:
-                logger.exception("RS485 port collect failed")
+                logger.exception("%s collect failed", port_config["name"])
+                comm_status.update(self._mark_port_failed(port_config))
                 continue
             values.update(port_values)
             data["data"].update(port_data)
@@ -92,6 +125,17 @@ class Collector:
             data["comm"][source] = "ok" if ok else "fail"
         return data, values, comm_status
 
+    def _mark_port_failed(self, port_config):
+        comm_status = {port_config["name"]: False}
+        for device in port_config.get("devices", []):
+            slave_id = device["slave_id"]
+            device_key = "%s:%s" % (port_config["name"], slave_id)
+            comm_status[device_key] = False
+            for parameter in device.get("parameters", []):
+                source = "%s:%s:%s" % (port_config["name"], slave_id, parameter["name"])
+                comm_status[source] = False
+        return comm_status
+
     def _collect_port(self, port, port_config):
         values = {}
         data = {}
@@ -100,14 +144,7 @@ class Collector:
 
         if not port.ensure_connected():
             logger.error("%s unavailable", port_name)
-            for device in port_config["devices"]:
-                slave_id = device["slave_id"]
-                device_key = "%s:%s" % (port_name, slave_id)
-                comm_status[device_key] = False
-                for parameter in device["parameters"]:
-                    source = "%s:%s:%s" % (port_name, slave_id, parameter["name"])
-                    comm_status[source] = False
-            return values, data, comm_status
+            return values, data, self._mark_port_failed(port_config)
 
         for device in port_config["devices"]:
             slave_id = device["slave_id"]
@@ -166,4 +203,9 @@ class Collector:
 
             comm_status[device_key] = device_ok
 
+        port_ok = any(
+            comm_status.get("%s:%s" % (port_name, device["slave_id"]))
+            for device in port_config["devices"]
+        )
+        comm_status[port_name] = bool(port_ok)
         return values, data, comm_status

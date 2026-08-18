@@ -10,6 +10,7 @@
     "topic": "iot/device/EDGE_001/data",
     "config_topic": "iot/device/EDGE_001/config",
     "config_ack_topic": "iot/device/EDGE_001/config/ack",
+    "alarm_topic": "iot/device/EDGE_001/alarm",
     "offline_sync_batch": 100,
     "keepalive": 60,
     "tls": {
@@ -37,7 +38,10 @@
   },
 
   "watchdog": {
-    "enable": true
+    "enable": true,
+    "mqtt_restart_after": 3,
+    "rs485_restart_after": 3,
+    "sqlite_restart_after": 1
   },
 
   "gpio": {
@@ -187,6 +191,11 @@
       "consecutive": 5,
       "action": {
         "type": "dual",
+        "alarm": {
+          "severity": "critical",
+          "code": "COMM_FAIL",
+          "message": "RS485_1 slave 1 consecutive read failures"
+        },
         "modbus": {
           "port": "RS485_1",
           "slave_id": 1,
@@ -206,10 +215,11 @@
       "source": "RS485_2:1",
       "consecutive": 5,
       "action": {
-        "type": "gpio",
-        "gpio": {
-          "line": 17,
-          "value": 1
+        "type": "alarm",
+        "alarm": {
+          "severity": "warning",
+          "code": "COMM_FAIL",
+          "message": "RS485_2 slave 1 consecutive read failures"
         }
       }
     }

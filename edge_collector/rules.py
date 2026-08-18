@@ -1,5 +1,6 @@
 import operator
 import threading
+import time
 
 from .logutil import logger
 
@@ -28,55 +29,94 @@ class RuleEngine:
 
     def process(self, values, comm_status=None):
         comm_status = comm_status or {}
+        events = []
         for rule in self.rules:
-            name = rule["name"]
-            rule_type = rule.get("type", "threshold")
-            matched = False
+            try:
+                event = self._process_rule(rule, values, comm_status)
+                if event:
+                    events.append(event)
+            except Exception:
+                logger.exception("Rule processing failed: %s", rule.get("name"))
+        return events
 
-            if rule_type == "comm_fail":
-                source = rule["source"]
-                ok = comm_status.get(source)
-                matched = ok is False
-            else:
-                source = rule["source"]
-                if source not in values:
-                    with self.lock:
-                        self.counters[name] = 0
-                        self.triggered[name] = False
-                    continue
-                matched = compare(values[source], rule["operator"], rule["threshold"])
+    def _process_rule(self, rule, values, comm_status):
+        name = rule["name"]
+        rule_type = rule.get("type", "threshold")
+        source = rule["source"]
+        matched = False
+        current_value = None
 
-            with self.lock:
-                if matched:
-                    self.counters[name] = self.counters.get(name, 0) + 1
-                else:
+        if rule_type == "comm_fail":
+            ok = comm_status.get(source)
+            matched = ok is False
+        else:
+            if source not in values:
+                with self.lock:
                     self.counters[name] = 0
                     self.triggered[name] = False
+                return None
+            current_value = values[source]
+            matched = compare(current_value, rule["operator"], rule["threshold"])
 
-                consecutive = rule.get("consecutive", 1)
-                if (
-                    matched
-                    and self.counters[name] >= consecutive
-                    and not self.triggered.get(name, False)
-                ):
-                    logger.error(
-                        "SAFETY RULE TRIGGERED: %s type=%s source=%s",
-                        name,
-                        rule_type,
-                        rule.get("source"),
-                    )
-                    self.triggered[name] = True
-                    self.execute_action(rule.get("action") or {})
+        with self.lock:
+            if matched:
+                self.counters[name] = self.counters.get(name, 0) + 1
+            else:
+                self.counters[name] = 0
+                self.triggered[name] = False
+
+            consecutive = rule.get("consecutive", 1)
+            if (
+                matched
+                and self.counters[name] >= consecutive
+                and not self.triggered.get(name, False)
+            ):
+                logger.error(
+                    "SAFETY RULE TRIGGERED: %s type=%s source=%s count=%s",
+                    name,
+                    rule_type,
+                    source,
+                    self.counters[name],
+                )
+                self.triggered[name] = True
+                action = rule.get("action") or {}
+                action_type = action.get("type")
+                try:
+                    if action_type and action_type != "alarm":
+                        self.execute_action(action)
+                    elif not action_type and (
+                        action.get("modbus") or action.get("gpio") or action.get("port")
+                    ):
+                        self.execute_action(action)
+                except Exception:
+                    logger.exception("Safety action failed: %s", name)
+                alarm_cfg = action.get("alarm") if isinstance(action.get("alarm"), dict) else {}
+                return {
+                    "device_id": None,
+                    "name": name,
+                    "type": rule_type,
+                    "source": source,
+                    "value": current_value,
+                    "consecutive": self.counters[name],
+                    "severity": alarm_cfg.get("severity", "critical"),
+                    "code": alarm_cfg.get("code") or rule_type.upper(),
+                    "message": alarm_cfg.get("message")
+                    or "%s triggered on %s" % (name, source),
+                    "ts": int(time.time()),
+                }
+        return None
 
     def execute_action(self, action):
         action_type = action.get("type", "modbus_write")
         results = []
 
+        if action_type == "alarm":
+            return True
         if action_type in ("gpio", "dual"):
             results.append(("gpio", self._gpio_action(action)))
         if action_type in ("modbus_write", "dual"):
             results.append(("modbus", self._modbus_action(action)))
-        if action_type not in ("gpio", "modbus_write", "dual"):
+        if action_type not in ("gpio", "modbus_write", "dual", "alarm"):
             logger.error("Unknown safety action type: %s", action_type)
             return False
 

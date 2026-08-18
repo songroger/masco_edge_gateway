@@ -28,7 +28,8 @@ main.py
 - `Ctrl+C` 优雅退出
 - systemd：`Type=notify`、开机自启、异常重启、watchdog
 - `install.sh` 安装依赖并注册服务
-- MQTT 远程下发完整配置，校验通过后原子写入并热加载；结果发布到 ack topic
+- MQTT 热更新采集参数：完整替换或局部 patch，写入本地后热加载，无需 SSH
+- 主循环按步骤隔离：RS485 / MQTT / SQLite 任一异常只恢复对应模块，并继续喂狗
 
 ### 多串口 / Modbus RTU 采集
 
@@ -50,9 +51,9 @@ main.py
 ### 规则引擎与双重关断
 
 - 阈值规则：`>` `>=` `<` `<=` `==` `!=`，连续 N 次触发
-- 通信故障规则 `comm_fail`：设备或测点连续 N 次失败
-- 动作类型：`modbus_write`、`gpio`、`dual`（GPIO + Modbus 都执行）
-- 触发后锁存，条件恢复后才允许再次触发
+- 通信故障规则 `comm_fail`：端口 `RS485_1`、设备 `RS485_1:1` 或测点 `RS485_1:1:temperature` 连续 N 次读取失败
+- 触发后发 MQTT 告警（`alarm_topic`），并可执行 `alarm` / `modbus_write` / `gpio` / `dual`
+- 条件恢复后才允许再次触发
 
 ### MQTT
 
@@ -61,6 +62,7 @@ main.py
 - 采集周期与上报周期分离
 - 上报 JSON 含测点值和 `comm` 通信状态
 - 订阅 `config_topic` 接收配置，向 `config_ack_topic` 回执
+- 规则触发时向 `alarm_topic` 上报告警
 
 ### 离线缓存与补传
 
@@ -69,12 +71,13 @@ main.py
 - 超过 `max_retry` 丢弃毒消息，避免堵死队列
 - 超过 `max_records` 删除最旧记录
 
-### systemd watchdog
+### Watchdog 与模块自恢复
 
-- 启动发送 `READY=1`
-- 每个采集周期发送 `WATCHDOG=1`
-- 停止发送 `STOPPING=1`
-- 服务文件 `WatchdogSec=30`，超时由 systemd 拉起进程
+- 启动 `READY=1`，每轮结束 `WATCHDOG=1`，退出 `STOPPING=1`
+- 采集、规则、上报、健康检查分步隔离，单模块异常不退出进程
+- RS485 连续断开则重建串口客户端；MQTT 连续失联则重启客户端（保留待处理配置）；SQLite 出错则重开数据库
+- 单路采集超时只标记该路失败并恢复该口，另一路继续
+- systemd `WatchdogSec=30`：进程完全卡死时由 systemd 拉起
 
 ## 1. 安装依赖
 
@@ -91,17 +94,39 @@ pip3 install -r requirements.txt
 - 批量读窗口、采集/上报周期、读重试
 - GPIO chip/line、阈值规则、通信故障规则
 
-### 远程配置下发
+### 远程配置热更新
 
-向 `mqtt.config_topic` 发布完整配置 JSON，或 `{"config": {...}}`。
+向 `mqtt.config_topic` 发布，无需 SSH 登录网关。结果回执在 `mqtt.config_ack_topic`。
 
-成功/失败会发布到 `mqtt.config_ack_topic`：
+局部修改采集参数：
 
 ```json
-{"ok": true, "message": "config applied", "device_id": "EDGE_001"}
+{"op": "patch", "collect": {"interval": 5, "upload_interval": 30}}
 ```
 
-旧配置备份为 `config.json.bak`。
+也可以直接发：
+
+```json
+{"collect": {"interval": 5}}
+```
+
+替换整份配置：
+
+```json
+{"op": "replace", "config": { }}
+```
+
+旧文件备份为 `config.json.bak`。
+
+### 通信异常告警
+
+`type=comm_fail` 的 `source` 可以是端口、从站或测点。连续失败后发到 `alarm_topic`：
+
+```json
+{"device_id":"EDGE_001","name":"rs485_1_comm_fail","type":"comm_fail","source":"RS485_1:1","consecutive":5,"severity":"critical","code":"COMM_FAIL"}
+```
+
+`action.type=alarm` 只告警；`dual` 则告警并执行 GPIO/Modbus 关断。
 
 ### 字节序
 
@@ -146,3 +171,4 @@ journalctl -u edge-collector -f
 4. `gpiod` 仅在 Linux 目标板上生效；Windows 开发机上 GPIO 动作会记录失败日志。
 5. 启用 MQTT TLS 时，把 `mqtt.tls.enable` 设为 `true`，并配置 CA/证书路径。
 6. `Type=notify` 依赖 systemd `NOTIFY_SOCKET`；直接 `python3 main.py` 时 watchdog 通知会被忽略。
+7. 模块自恢复不能替代 systemd：只有进程彻底卡死/退出时才由 `WatchdogSec` 拉起整个服务。

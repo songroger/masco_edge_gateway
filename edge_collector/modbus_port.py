@@ -43,6 +43,20 @@ class ModbusPort:
                 pass
             self.connected = False
 
+    def recover(self):
+        logger.warning("%s recovering serial client: %s", self.name, self.config["port"])
+        self.close()
+        cfg = self.config
+        self.client = ModbusSerialClient(
+            port=cfg["port"],
+            baudrate=cfg.get("baudrate", 9600),
+            bytesize=cfg.get("bytesize", 8),
+            parity=cfg.get("parity", "N"),
+            stopbits=cfg.get("stopbits", 1),
+            timeout=cfg.get("timeout", 2),
+        )
+        return self.connect()
+
     def read_registers(self, slave_id, address, count, register_type, retries=0):
         last_error = None
         attempts = max(1, retries + 1)

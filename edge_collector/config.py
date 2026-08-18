@@ -61,10 +61,59 @@ def validate_config(data):
     return True
 
 
+META_KEYS = ("op", "cmd", "patch", "config", "__error__")
+
+
 def unwrap_remote_payload(payload):
     if isinstance(payload, dict) and "config" in payload and isinstance(payload["config"], dict):
         return payload["config"]
     return payload
+
+
+def deep_merge(base, patch):
+    result = deepcopy(base)
+    for key, value in (patch or {}).items():
+        if key in ("serial_ports", "rules") and isinstance(value, list):
+            result[key] = deepcopy(value)
+        elif isinstance(value, dict) and isinstance(result.get(key), dict):
+            result[key] = deep_merge(result[key], value)
+        else:
+            result[key] = deepcopy(value)
+    return result
+
+
+def parse_remote_config(payload, current):
+    if not isinstance(payload, dict):
+        raise ConfigError("remote config must be a JSON object")
+    if payload.get("__error__"):
+        raise ConfigError(str(payload["__error__"]))
+
+    op = payload.get("op") or payload.get("cmd")
+    if "patch" in payload and isinstance(payload["patch"], dict):
+        merged = deep_merge(current, payload["patch"])
+        validate_config(merged)
+        return merged, "patch"
+    if op in ("patch", "update", "merge"):
+        patch = {key: value for key, value in payload.items() if key not in META_KEYS}
+        if "config" in payload and isinstance(payload["config"], dict):
+            patch = payload["config"]
+        merged = deep_merge(current, patch)
+        validate_config(merged)
+        return merged, "patch"
+    if "config" in payload and isinstance(payload["config"], dict):
+        data = payload["config"]
+        validate_config(data)
+        return deepcopy(data), "replace"
+    if all(key in payload for key in REQUIRED_ROOT):
+        validate_config(payload)
+        return deepcopy(payload), "replace"
+
+    patch = {key: value for key, value in payload.items() if key not in META_KEYS}
+    if not patch:
+        raise ConfigError("empty remote config")
+    merged = deep_merge(current, patch)
+    validate_config(merged)
+    return merged, "patch"
 
 
 class Config:
@@ -82,6 +131,11 @@ class Config:
 
     def reload(self):
         self.load()
+
+    def apply_remote(self, payload, backup=True):
+        data, mode = parse_remote_config(payload, self.data)
+        self.apply_dict(data, backup=backup)
+        return mode
 
     def apply_dict(self, data, backup=True):
         data = unwrap_remote_payload(data)

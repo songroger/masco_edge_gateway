@@ -89,6 +89,36 @@ class MQTTManager:
         except queue.Empty:
             return None
 
+    def drain_config_queue(self):
+        items = []
+        while True:
+            item = self.poll_config()
+            if item is None:
+                break
+            items.append(item)
+        return items
+
+    def restore_config_queue(self, items):
+        for item in items or []:
+            self._config_queue.put(item)
+
+    def healthy(self):
+        return bool(self.connected)
+
+    def restart(self):
+        pending = self.drain_config_queue()
+        logger.warning("Restarting MQTT client")
+        self.stop()
+        self.connected = False
+        self.client = self._create_client()
+        self._configure_auth()
+        self._configure_tls()
+        self.client.on_connect = self.on_connect
+        self.client.on_disconnect = self.on_disconnect
+        self.client.on_message = self.on_message
+        self.restore_config_queue(pending)
+        self.start()
+
     def start(self):
         self.client.reconnect_delay_set(min_delay=1, max_delay=30)
         try:
@@ -123,11 +153,26 @@ class MQTTManager:
             return False
 
     def send_data(self, topic, payload):
-        if self.publish(topic, payload):
-            return True
-        self.store.save(topic, payload)
-        logger.warning("MQTT unavailable, data cached locally")
+        try:
+            if self.publish(topic, payload):
+                return True
+        except Exception as exc:
+            logger.error("MQTT publish exception: %s", exc)
+            self.connected = False
+        try:
+            self.store.save(topic, payload)
+            logger.warning("MQTT unavailable, data cached locally")
+        except Exception as exc:
+            logger.error("SQLite cache failed, dropping in-memory payload: %s", exc)
+            return False
         return False
+
+    def publish_alarm(self, event):
+        topic = self.config.get("alarm_topic")
+        if not topic:
+            return False
+        payload = json.dumps(event, ensure_ascii=False, separators=(",", ":"))
+        return self.send_data(topic, payload)
 
     def publish_ack(self, ok, message, extra=None):
         topic = self.config.get("config_ack_topic")
@@ -161,8 +206,12 @@ class MQTTManager:
     def sync_offline_data(self):
         if not self.connected:
             return
-        batch_size = self.config.get("offline_sync_batch", 100)
-        records = self.store.get_batch(batch_size)
+        try:
+            batch_size = self.config.get("offline_sync_batch", 100)
+            records = self.store.get_batch(batch_size)
+        except Exception:
+            logger.exception("SQLite outbox read failed")
+            return
         if not records:
             return
         logger.info("Syncing %s offline records", len(records))
@@ -171,16 +220,24 @@ class MQTTManager:
             retry_count = record[3] if len(record) > 3 else 0
             if not self.connected:
                 break
-            if retry_count >= self.store.max_retry:
-                logger.error(
-                    "Dropping outbox record id=%s after %s retries",
-                    record_id,
-                    retry_count,
-                )
-                self.store.delete(record_id)
-                continue
-            if self.publish(topic, payload):
-                self.store.delete(record_id)
-            else:
-                self.store.increase_retry(record_id)
+            try:
+                if retry_count >= self.store.max_retry:
+                    logger.error(
+                        "Dropping outbox record id=%s after %s retries",
+                        record_id,
+                        retry_count,
+                    )
+                    self.store.delete(record_id)
+                    continue
+                if self.publish(topic, payload):
+                    self.store.delete(record_id)
+                else:
+                    self.store.increase_retry(record_id)
+                    break
+            except Exception:
+                logger.exception("Offline sync failed for id=%s", record_id)
+                try:
+                    self.store.increase_retry(record_id)
+                except Exception:
+                    pass
                 break
