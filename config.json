@@ -8,20 +8,41 @@
     "password": "123456",
     "client_id": "EDGE_001",
     "topic": "iot/device/EDGE_001/data",
+    "config_topic": "iot/device/EDGE_001/config",
+    "config_ack_topic": "iot/device/EDGE_001/config/ack",
     "offline_sync_batch": 100,
-    "keepalive": 60
+    "keepalive": 60,
+    "tls": {
+      "enable": false,
+      "ca_certs": "/etc/edge_collector/certs/ca.crt",
+      "certfile": "",
+      "keyfile": "",
+      "insecure": false
+    }
   },
 
   "database": {
     "path": "./edge_collector.db",
-    "max_records": 100000
+    "max_records": 100000,
+    "max_retry": 50
   },
 
   "collect": {
     "interval": 10,
     "upload_interval": 60,
     "request_timeout": 2,
-    "retry": 2
+    "retry": 2,
+    "batch_max_gap": 4,
+    "batch_max_count": 64
+  },
+
+  "watchdog": {
+    "enable": true
+  },
+
+  "gpio": {
+    "chip": "/dev/gpiochip0",
+    "consumer": "edge-collector"
   },
 
   "serial_ports": [
@@ -32,7 +53,7 @@
       "bytesize": 8,
       "parity": "N",
       "stopbits": 1,
-
+      "timeout": 2,
       "devices": [
         {
           "slave_id": 1,
@@ -42,7 +63,9 @@
               "address": 0,
               "register_type": "holding",
               "data_type": "int16",
+              "byte_order": "AB",
               "scale": 0.1,
+              "offset": 0,
               "unit": "℃"
             },
             {
@@ -50,6 +73,7 @@
               "address": 1,
               "register_type": "holding",
               "data_type": "uint16",
+              "byte_order": "AB",
               "scale": 0.1,
               "unit": "%"
             },
@@ -58,6 +82,7 @@
               "address": 2,
               "register_type": "holding",
               "data_type": "uint16",
+              "byte_order": "AB",
               "scale": 0.1,
               "unit": "V"
             },
@@ -66,6 +91,7 @@
               "address": 3,
               "register_type": "holding",
               "data_type": "uint16",
+              "byte_order": "AB",
               "scale": 0.01,
               "unit": "A"
             }
@@ -73,7 +99,6 @@
         }
       ]
     },
-
     {
       "name": "RS485_2",
       "port": "/dev/ttyS4",
@@ -81,7 +106,7 @@
       "bytesize": 8,
       "parity": "N",
       "stopbits": 1,
-
+      "timeout": 2,
       "devices": [
         {
           "slave_id": 1,
@@ -90,8 +115,9 @@
               "name": "power",
               "address": 0,
               "register_type": "holding",
-              "data_type": "uint32",
-              "scale": 0.1,
+              "data_type": "float32",
+              "byte_order": "ABCD",
+              "scale": 1,
               "unit": "W"
             },
             {
@@ -99,6 +125,7 @@
               "address": 2,
               "register_type": "holding",
               "data_type": "uint32",
+              "byte_order": "ABCD",
               "scale": 0.01,
               "unit": "kWh"
             }
@@ -111,32 +138,79 @@
   "rules": [
     {
       "name": "high_temperature_shutdown",
+      "type": "threshold",
       "source": "RS485_1:1:temperature",
       "operator": ">=",
       "threshold": 80,
       "consecutive": 3,
       "action": {
-        "type": "modbus_write",
-        "port": "RS485_1",
-        "slave_id": 1,
-        "register_type": "holding",
-        "address": 100,
-        "value": 0
+        "type": "dual",
+        "modbus": {
+          "port": "RS485_1",
+          "slave_id": 1,
+          "register_type": "holding",
+          "address": 100,
+          "value": 0
+        },
+        "gpio": {
+          "line": 17,
+          "value": 1
+        }
       }
     },
     {
       "name": "over_current_shutdown",
+      "type": "threshold",
       "source": "RS485_1:1:current",
       "operator": ">",
       "threshold": 20,
       "consecutive": 2,
       "action": {
-        "type": "modbus_write",
-        "port": "RS485_1",
-        "slave_id": 1,
-        "register_type": "holding",
-        "address": 101,
-        "value": 0
+        "type": "dual",
+        "modbus": {
+          "port": "RS485_1",
+          "slave_id": 1,
+          "register_type": "holding",
+          "address": 101,
+          "value": 0
+        },
+        "gpio": {
+          "line": 17,
+          "value": 1
+        }
+      }
+    },
+    {
+      "name": "rs485_1_comm_fail",
+      "type": "comm_fail",
+      "source": "RS485_1:1",
+      "consecutive": 5,
+      "action": {
+        "type": "dual",
+        "modbus": {
+          "port": "RS485_1",
+          "slave_id": 1,
+          "register_type": "holding",
+          "address": 100,
+          "value": 0
+        },
+        "gpio": {
+          "line": 17,
+          "value": 1
+        }
+      }
+    },
+    {
+      "name": "rs485_2_comm_fail",
+      "type": "comm_fail",
+      "source": "RS485_2:1",
+      "consecutive": 5,
+      "action": {
+        "type": "gpio",
+        "gpio": {
+          "line": 17,
+          "value": 1
+        }
       }
     }
   ]

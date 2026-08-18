@@ -4,13 +4,16 @@ After=network-online.target
 Wants=network-online.target
 
 [Service]
-Type=simple
+Type=notify
+NotifyAccess=main
+WatchdogSec=30
 WorkingDirectory=/opt/edge_collector
 ExecStart=/usr/bin/python3 /opt/edge_collector/main.py
 Restart=always
 RestartSec=5
 User=root
 LimitNOFILE=65535
+Environment=PYTHONUNBUFFERED=1
 
 [Install]
 WantedBy=multi-user.target

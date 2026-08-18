@@ -1,0 +1,9 @@
+logs/*
+.idea
+__pycache__/
+env
+docs/
+.env
+*.toml
+.vscode/
+edge_collector.db*
