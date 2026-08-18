@@ -3,7 +3,10 @@ logs/*
 __pycache__/
 env
 docs/
+build/
+dist/
 .env
 *.toml
 .vscode/
 edge_collector.db*
+main.spec

@@ -2,10 +2,10 @@
   "device_id": "EDGE_001",
 
   "mqtt": {
-    "host": "192.168.1.100",
+    "host": "118.178.58.233",
     "port": 1883,
-    "username": "iot",
-    "password": "123456",
+    "username": "masco",
+    "password": "masco",
     "client_id": "EDGE_001",
     "topic": "iot/device/EDGE_001/data",
     "config_topic": "iot/device/EDGE_001/config",
