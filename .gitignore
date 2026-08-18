@@ -2,7 +2,6 @@ logs/*
 .idea
 __pycache__/
 env
-docs/
 build/
 dist/
 .env
