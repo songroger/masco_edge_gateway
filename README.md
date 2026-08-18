@@ -62,6 +62,107 @@ main.py
 - 触发后发 MQTT 告警（`alarm_topic`），并可执行 `alarm` / `modbus_write` / `gpio` / `dual`
 - 条件恢复后才允许再次触发
 
+### GPIO 关断输出
+
+GPIO **不是日常采集通道**，而是安全关断（safety shutdown）输出：规则命中后拉高/拉低某根脚，用于切断设备或驱动继电器。传感器仍走 RS485/Modbus；GPIO **只出不入**。
+
+| 层级 | 作用 |
+| --- | --- |
+| `config.json` → `gpio` | 指定芯片路径（默认 `/dev/gpiochip0`）和 consumer 名 |
+| `GpioController` | 用 Linux `libgpiod` 申请输出线并写电平 |
+| `RuleEngine` | 阈值/通信故障满足后，按 `action.type` 决定是否写 GPIO |
+| `CollectorService` | 创建 GPIO、交给规则引擎、退出时 `close()` |
+
+**调用链**
+
+```text
+主循环 collect_once()
+  → values / comm_status
+  → RuleEngine.process()
+      → 条件连续成立 N 次，且本轮尚未触发过
+      → execute_action()
+          → type 为 gpio / dual 时 → GpioController.set_line(line, value)
+      → 同时生成 alarm 事件
+  → MQTT 上报告警
+```
+
+对应服务里的步骤：采集后立刻跑规则并 _publish_alarms
+
+**规则侧逻辑**
+
+1. 条件判断：`threshold` 比较测点值；`comm_fail` 看对应 `comm_status` 是否失败
+2. 防抖：条件成立则 `counters[name] += 1`；条件不成立则计数清零并清除 `triggered`，允许下次再触发
+3. 真正关断只做一次：`counters >= consecutive` 且尚未 `triggered` 时置位并执行 action
+4. `action.type` 决定执行范围：
+
+| `action.type` | 行为 |
+| --- | --- |
+| `alarm` | 只告警，不写 GPIO/Modbus |
+| `gpio` | 只写 GPIO |
+| `modbus_write` | 只写寄存器 |
+| `dual` | GPIO + Modbus 都做（高温/过流/通信失败常用） |
+
+**配置示例**（高温连续 3 次 ≥ 80 → Modbus 关设备 + GPIO line 17 置 1 + 告警）：
+
+```json
+{
+  "gpio": {
+    "chip": "/dev/gpiochip0",
+    "consumer": "edge-collector"
+  },
+  "rules": [
+    {
+      "name": "high_temperature_shutdown",
+      "type": "threshold",
+      "source": "RS485_1:1:temperature",
+      "operator": ">=",
+      "threshold": 80,
+      "consecutive": 3,
+      "action": {
+        "type": "dual",
+        "modbus": {
+          "port": "RS485_1",
+          "slave_id": 1,
+          "register_type": "holding",
+          "address": 100,
+          "value": 0
+        },
+        "gpio": {
+          "line": 17,
+          "value": 1
+        }
+      }
+    }
+  ]
+}
+```
+
+**`GpioController` 行为**
+
+- `gpiod` 可选：非 Linux / 未安装时写脚失败并打日志，进程不退出
+- 向 `chip` 申请指定 line 为 OUTPUT，初始 INACTIVE；换线会先释放再重新申请（当前一次只管一根线）
+- `set_line(line, value)`：`value != 0` → ACTIVE，否则 INACTIVE；写成功打 `CRITICAL` 日志
+
+
+
+和主流程的关系（简图）
+flowchart TD
+  A[采集 Modbus 测点] --> B[RuleEngine.process]
+  B --> C{条件连续成立?}
+  C -->|否| D[计数清零 / 可再次触发]
+  C -->|是且未触发过| E[execute_action]
+  E --> F{action.type}
+  F -->|gpio / dual| G[GpioController.set_line]
+  F -->|modbus_write / dual| H[Modbus 写寄存器]
+  F -->|任意| I[生成 alarm 事件]
+  I --> J[MQTT 发布告警]
+
+使用注意
+GPIO 是关断执行器，不是采集输入。
+只在 Linux 目标板 + gpiod 可用时真正生效；开发机一般只会看到失败日志。
+line / value 必须按硬件接线和电平极性核对，写错会直接驱动真实硬件。
+
+
 ### MQTT
 
 - 用户名密码、断线重连、QoS 1
