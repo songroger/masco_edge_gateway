@@ -2,12 +2,19 @@ import time
 from concurrent.futures import ThreadPoolExecutor, wait
 from datetime import datetime
 
-from .decode import decode_registers, register_count, scale_value
+from .decode import decode_registers, parse_address, register_count, scale_value
 from .logutil import logger
+
+
+BIT_TYPES = ("coil", "discrete")
 
 
 def now_str():
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+def _param_address(param):
+    return parse_address(param["address"])
 
 
 def build_batches(parameters, max_gap, max_count):
@@ -17,11 +24,11 @@ def build_batches(parameters, max_gap, max_count):
 
     batches = []
     for register_type, items in grouped.items():
-        items = sorted(items, key=lambda item: item["address"])
+        items = sorted(items, key=_param_address)
         current = []
         start = end = None
         for param in items:
-            p_start = param["address"]
+            p_start = _param_address(param)
             p_end = p_start + register_count(param["data_type"])
             if not current:
                 current = [param]
@@ -154,6 +161,29 @@ class Collector:
             decoded = {}
 
             for register_type, address, count, params in batches:
+                if register_type in BIT_TYPES:
+                    bits = port.read_bits(
+                        slave_id=slave_id,
+                        address=address,
+                        count=count,
+                        bit_type=register_type,
+                        retries=self.retry,
+                    )
+                    if bits is None:
+                        continue
+                    for parameter in params:
+                        offset = _param_address(parameter) - address
+                        if offset < 0 or offset >= len(bits):
+                            continue
+                        raw = bits[offset]
+                        value = scale_value(
+                            raw,
+                            parameter.get("scale", 1),
+                            parameter.get("offset", 0),
+                        )
+                        decoded[parameter["name"]] = (parameter, value)
+                    continue
+
                 registers = port.read_registers(
                     slave_id=slave_id,
                     address=address,
@@ -164,7 +194,7 @@ class Collector:
                 if registers is None:
                     continue
                 for parameter in params:
-                    offset = parameter["address"] - address
+                    offset = _param_address(parameter) - address
                     nregs = register_count(parameter["data_type"])
                     slice_regs = registers[offset:offset + nregs]
                     try:

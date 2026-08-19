@@ -3,7 +3,7 @@ import os
 import tempfile
 from copy import deepcopy
 
-from .decode import register_count
+from .decode import parse_address, register_count
 from .logutil import logger
 
 
@@ -51,9 +51,16 @@ def validate_config(data):
                 where = "%s.devices[%s].parameters[%s]" % (port["name"], j, k)
                 _require(param, REQUIRED_PARAM, where)
                 try:
+                    parse_address(param["address"])
+                except (TypeError, ValueError) as exc:
+                    raise ConfigError("%s: invalid address: %s" % (where, exc)) from exc
+                try:
                     register_count(param["data_type"])
                 except ValueError as exc:
                     raise ConfigError("%s: %s" % (where, exc)) from exc
+                reg_type = param.get("register_type", "holding")
+                if reg_type not in ("holding", "input", "coil", "discrete"):
+                    raise ConfigError("%s: unsupported register_type: %s" % (where, reg_type))
 
     rules = data.get("rules", [])
     if not isinstance(rules, list):

@@ -81,8 +81,7 @@ class CollectorService:
             self.ports[port_config["name"]] = port
 
         self.gpio = GpioController(self.config.gpio)
-        self.rule_engine = RuleEngine(self.config.rules, self.ports)
-        # self.rule_engine = RuleEngine(self.config.rules, self.ports, self.gpio)
+        self.rule_engine = RuleEngine(self.config.rules, self.ports, self.gpio)
         self.collector = Collector(self.config, self.ports)
         self.watchdog = SystemdWatchdog(self.config.watchdog)
         # New objects start healthy; do not inherit old fail streaks.

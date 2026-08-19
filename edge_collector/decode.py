@@ -2,6 +2,7 @@ import struct
 
 
 REGISTER_COUNT = {
+    "bool": 1,
     "uint16": 1,
     "int16": 1,
     "uint32": 2,
@@ -9,12 +10,40 @@ REGISTER_COUNT = {
     "float32": 2,
 }
 
+# Protocol 系数 → value * scale；系数 100 表示两位小数（raw/100）
+COEFFICIENT_TO_SCALE = {
+    100: 0.01,
+    10: 0.1,
+    1: 1,
+    0.01: 100,
+}
+
+
+def parse_address(address):
+    """Accept int or hex string like '0x3108' (protocol table uses hex)."""
+    if isinstance(address, int):
+        return address
+    if isinstance(address, str):
+        text = address.strip().lower()
+        if text.startswith("0x"):
+            return int(text, 16)
+        return int(text, 10)
+    raise ValueError("Invalid Modbus address: %r" % address)
+
 
 def register_count(data_type):
     count = REGISTER_COUNT.get(data_type)
     if count is None:
         raise ValueError("Unsupported data_type: %s" % data_type)
     return count
+
+
+def scale_from_coefficient(coefficient):
+    if coefficient is None:
+        return 1
+    if coefficient in COEFFICIENT_TO_SCALE:
+        return COEFFICIENT_TO_SCALE[coefficient]
+    return 1.0 / float(coefficient)
 
 
 def _words_to_bytes(registers):
@@ -64,6 +93,8 @@ def decode_registers(registers, data_type, byte_order=None):
     raw_bytes = _words_to_bytes(registers[:count])
     ordered = _apply_byte_order(raw_bytes, byte_order)
 
+    if data_type == "bool":
+        return 1 if registers[0] else 0
     if data_type == "uint16":
         return struct.unpack(">H", ordered)[0]
     if data_type == "int16":

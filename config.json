@@ -33,7 +33,7 @@
     "upload_interval": 60,
     "request_timeout": 2,
     "retry": 2,
-    "batch_max_gap": 4,
+    "batch_max_gap": 8,
     "batch_max_count": 64
   },
 
@@ -53,7 +53,7 @@
     {
       "name": "RS485_1",
       "port": "/dev/ttyS3",
-      "baudrate": 9600,
+      "baudrate": 115200,
       "bytesize": 8,
       "parity": "N",
       "stopbits": 1,
@@ -61,38 +61,619 @@
       "devices": [
         {
           "slave_id": 1,
+          "model": "MPPT_G3",
           "parameters": [
             {
-              "name": "temperature",
-              "address": 0,
-              "register_type": "holding",
-              "data_type": "int16",
-              "byte_order": "AB",
-              "scale": 0.1,
-              "offset": 0,
-              "unit": "℃"
+              "name": "charge_switch",
+              "address": "0x0000",
+              "register_type": "coil",
+              "data_type": "bool",
+              "scale": 1,
+              "unit": ""
             },
             {
-              "name": "humidity",
-              "address": 1,
-              "register_type": "holding",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.1,
-              "unit": "%"
+              "name": "load_manual_switch",
+              "address": "0x0002",
+              "register_type": "coil",
+              "data_type": "bool",
+              "scale": 1,
+              "unit": ""
             },
             {
-              "name": "voltage",
-              "address": 2,
-              "register_type": "holding",
+              "name": "device_over_temp",
+              "address": "0x2000",
+              "register_type": "discrete",
+              "data_type": "bool",
+              "scale": 1,
+              "unit": ""
+            },
+            {
+              "name": "power_device_over_temp",
+              "address": "0x2001",
+              "register_type": "discrete",
+              "data_type": "bool",
+              "scale": 1,
+              "unit": ""
+            },
+            {
+              "name": "pv_rated_voltage",
+              "address": "0x3000",
+              "register_type": "input",
               "data_type": "uint16",
               "byte_order": "AB",
-              "scale": 0.1,
+              "scale": 0.01,
               "unit": "V"
             },
             {
-              "name": "current",
-              "address": 3,
+              "name": "pv_rated_current",
+              "address": "0x3001",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "A"
+            },
+            {
+              "name": "pv_rated_power",
+              "address": "0x3002",
+              "register_type": "input",
+              "data_type": "uint32",
+              "byte_order": "CDAB",
+              "scale": 0.01,
+              "unit": "W"
+            },
+            {
+              "name": "battery_rated_voltage",
+              "address": "0x3004",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "V"
+            },
+            {
+              "name": "battery_rated_charge_current",
+              "address": "0x3005",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "A"
+            },
+            {
+              "name": "battery_rated_charge_power",
+              "address": "0x3006",
+              "register_type": "input",
+              "data_type": "uint32",
+              "byte_order": "CDAB",
+              "scale": 0.01,
+              "unit": "W"
+            },
+            {
+              "name": "load_rated_current",
+              "address": "0x300E",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "A"
+            },
+            {
+              "name": "pv_voltage",
+              "address": "0x3100",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "V"
+            },
+            {
+              "name": "pv_current",
+              "address": "0x3101",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "A"
+            },
+            {
+              "name": "pv_power",
+              "address": "0x3102",
+              "register_type": "input",
+              "data_type": "uint32",
+              "byte_order": "CDAB",
+              "scale": 0.01,
+              "unit": "W"
+            },
+            {
+              "name": "pv_output_voltage",
+              "address": "0x3104",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "V"
+            },
+            {
+              "name": "pv_output_current",
+              "address": "0x3105",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "A"
+            },
+            {
+              "name": "pv_output_power",
+              "address": "0x3106",
+              "register_type": "input",
+              "data_type": "uint32",
+              "byte_order": "CDAB",
+              "scale": 0.01,
+              "unit": "W"
+            },
+            {
+              "name": "battery_voltage",
+              "address": "0x3108",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "V"
+            },
+            {
+              "name": "battery_current",
+              "address": "0x3109",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "A"
+            },
+            {
+              "name": "battery_power",
+              "address": "0x310A",
+              "register_type": "input",
+              "data_type": "uint32",
+              "byte_order": "CDAB",
+              "scale": 0.01,
+              "unit": "W"
+            },
+            {
+              "name": "load_voltage",
+              "address": "0x310C",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "V"
+            },
+            {
+              "name": "load_current",
+              "address": "0x310D",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "A"
+            },
+            {
+              "name": "load_power",
+              "address": "0x310E",
+              "register_type": "input",
+              "data_type": "uint32",
+              "byte_order": "CDAB",
+              "scale": 0.01,
+              "unit": "W"
+            },
+            {
+              "name": "remote_battery_temp",
+              "address": "0x3110",
+              "register_type": "input",
+              "data_type": "int16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "℃"
+            },
+            {
+              "name": "device_temp",
+              "address": "0x3111",
+              "register_type": "input",
+              "data_type": "int16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "℃"
+            },
+            {
+              "name": "mos_temp",
+              "address": "0x3112",
+              "register_type": "input",
+              "data_type": "int16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "℃"
+            },
+            {
+              "name": "battery_soc",
+              "address": "0x311A",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 1,
+              "unit": "%"
+            },
+            {
+              "name": "system_voltage",
+              "address": "0x311D",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "V"
+            },
+            {
+              "name": "battery_status",
+              "address": "0x3200",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 1,
+              "unit": ""
+            },
+            {
+              "name": "charge_status",
+              "address": "0x3201",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 1,
+              "unit": ""
+            },
+            {
+              "name": "discharge_status",
+              "address": "0x3202",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 1,
+              "unit": ""
+            },
+            {
+              "name": "today_pv_max_voltage",
+              "address": "0x3300",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "V"
+            },
+            {
+              "name": "today_pv_min_voltage",
+              "address": "0x3301",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "V"
+            },
+            {
+              "name": "today_battery_max_voltage",
+              "address": "0x3302",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "V"
+            },
+            {
+              "name": "today_battery_min_voltage",
+              "address": "0x3303",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "V"
+            },
+            {
+              "name": "today_consumed_energy",
+              "address": "0x3304",
+              "register_type": "input",
+              "data_type": "uint32",
+              "byte_order": "CDAB",
+              "scale": 0.01,
+              "unit": "kWh"
+            },
+            {
+              "name": "month_consumed_energy",
+              "address": "0x3306",
+              "register_type": "input",
+              "data_type": "uint32",
+              "byte_order": "CDAB",
+              "scale": 0.01,
+              "unit": "kWh"
+            },
+            {
+              "name": "year_consumed_energy",
+              "address": "0x3308",
+              "register_type": "input",
+              "data_type": "uint32",
+              "byte_order": "CDAB",
+              "scale": 0.01,
+              "unit": "kWh"
+            },
+            {
+              "name": "total_consumed_energy",
+              "address": "0x330A",
+              "register_type": "input",
+              "data_type": "uint32",
+              "byte_order": "CDAB",
+              "scale": 0.01,
+              "unit": "kWh"
+            },
+            {
+              "name": "today_generated_energy",
+              "address": "0x330C",
+              "register_type": "input",
+              "data_type": "uint32",
+              "byte_order": "CDAB",
+              "scale": 0.01,
+              "unit": "kWh"
+            },
+            {
+              "name": "month_generated_energy",
+              "address": "0x330E",
+              "register_type": "input",
+              "data_type": "uint32",
+              "byte_order": "CDAB",
+              "scale": 0.01,
+              "unit": "kWh"
+            },
+            {
+              "name": "year_generated_energy",
+              "address": "0x3310",
+              "register_type": "input",
+              "data_type": "uint32",
+              "byte_order": "CDAB",
+              "scale": 0.01,
+              "unit": "kWh"
+            },
+            {
+              "name": "total_generated_energy",
+              "address": "0x3312",
+              "register_type": "input",
+              "data_type": "uint32",
+              "byte_order": "CDAB",
+              "scale": 0.01,
+              "unit": "kWh"
+            },
+            {
+              "name": "battery_total_discharge_current",
+              "address": "0x3318",
+              "register_type": "input",
+              "data_type": "uint32",
+              "byte_order": "CDAB",
+              "scale": 0.01,
+              "unit": "A"
+            },
+            {
+              "name": "battery_total_current",
+              "address": "0x331B",
+              "register_type": "input",
+              "data_type": "uint32",
+              "byte_order": "CDAB",
+              "scale": 0.01,
+              "unit": "A"
+            },
+            {
+              "name": "pack_cell_count",
+              "address": "0x3400",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 1,
+              "unit": ""
+            },
+            {
+              "name": "pack_voltage",
+              "address": "0x3401",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "V"
+            },
+            {
+              "name": "pack_current",
+              "address": "0x3402",
+              "register_type": "input",
+              "data_type": "int16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "A"
+            },
+            {
+              "name": "pack_power",
+              "address": "0x3403",
+              "register_type": "input",
+              "data_type": "uint32",
+              "byte_order": "CDAB",
+              "scale": 0.01,
+              "unit": "W"
+            },
+            {
+              "name": "pack_full_capacity",
+              "address": "0x3405",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 1,
+              "unit": "Ah"
+            },
+            {
+              "name": "pack_soc",
+              "address": "0x3406",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 1,
+              "unit": "%"
+            },
+            {
+              "name": "pack_remaining_minutes",
+              "address": "0x3407",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 1,
+              "unit": "min"
+            },
+            {
+              "name": "pack_cell_temp_max",
+              "address": "0x3408",
+              "register_type": "input",
+              "data_type": "int16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "℃"
+            },
+            {
+              "name": "pack_cell_temp_min",
+              "address": "0x3409",
+              "register_type": "input",
+              "data_type": "int16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "℃"
+            },
+            {
+              "name": "pack_balance_temp",
+              "address": "0x340A",
+              "register_type": "input",
+              "data_type": "int16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "℃"
+            },
+            {
+              "name": "pack_ambient_temp",
+              "address": "0x340B",
+              "register_type": "input",
+              "data_type": "int16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "℃"
+            },
+            {
+              "name": "pack_mos_temp",
+              "address": "0x340C",
+              "register_type": "input",
+              "data_type": "int16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "℃"
+            },
+            {
+              "name": "pack_cycle_count",
+              "address": "0x340D",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 1,
+              "unit": ""
+            },
+            {
+              "name": "pack_balance_flag",
+              "address": "0x340E",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 1,
+              "unit": ""
+            },
+            {
+              "name": "pack_voltage_status",
+              "address": "0x340F",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 1,
+              "unit": ""
+            },
+            {
+              "name": "pack_current_status",
+              "address": "0x3410",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 1,
+              "unit": ""
+            },
+            {
+              "name": "pack_mos_status",
+              "address": "0x3411",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 1,
+              "unit": ""
+            },
+            {
+              "name": "battery_type",
+              "address": "0x9000",
+              "register_type": "holding",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 1,
+              "unit": ""
+            },
+            {
+              "name": "battery_capacity",
+              "address": "0x9001",
+              "register_type": "holding",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 1,
+              "unit": "Ah"
+            },
+            {
+              "name": "over_voltage_disconnect",
+              "address": "0x9003",
+              "register_type": "holding",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "V"
+            },
+            {
+              "name": "charging_limit_voltage",
+              "address": "0x9004",
+              "register_type": "holding",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "V"
+            },
+            {
+              "name": "low_voltage_disconnect",
+              "address": "0x900D",
+              "register_type": "holding",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "V"
+            },
+            {
+              "name": "load_control_mode",
+              "address": "0x903D",
+              "register_type": "holding",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 1,
+              "unit": ""
+            },
+            {
+              "name": "max_charge_current",
+              "address": "0x90BF",
               "register_type": "holding",
               "data_type": "uint16",
               "byte_order": "AB",
@@ -102,58 +683,29 @@
           ]
         }
       ]
-    },
-    {
-      "name": "RS485_2",
-      "port": "/dev/ttyS4",
-      "baudrate": 9600,
-      "bytesize": 8,
-      "parity": "N",
-      "stopbits": 1,
-      "timeout": 2,
-      "devices": [
-        {
-          "slave_id": 1,
-          "parameters": [
-            {
-              "name": "power",
-              "address": 0,
-              "register_type": "holding",
-              "data_type": "float32",
-              "byte_order": "ABCD",
-              "scale": 1,
-              "unit": "W"
-            },
-            {
-              "name": "energy",
-              "address": 2,
-              "register_type": "holding",
-              "data_type": "uint32",
-              "byte_order": "ABCD",
-              "scale": 0.01,
-              "unit": "kWh"
-            }
-          ]
-        }
-      ]
     }
   ],
 
   "rules": [
     {
-      "name": "high_temperature_shutdown",
+      "name": "device_over_temp_stop_charge",
       "type": "threshold",
-      "source": "RS485_1:1:temperature",
-      "operator": ">=",
-      "threshold": 80,
-      "consecutive": 3,
+      "source": "RS485_1:1:device_over_temp",
+      "operator": "==",
+      "threshold": 1,
+      "consecutive": 2,
       "action": {
         "type": "dual",
+        "alarm": {
+          "severity": "critical",
+          "code": "DEVICE_OVER_TEMP",
+          "message": "MPPT device over-temperature, stop charging"
+        },
         "modbus": {
           "port": "RS485_1",
           "slave_id": 1,
-          "register_type": "holding",
-          "address": 100,
+          "register_type": "coil",
+          "address": "0x0000",
           "value": 0
         },
         "gpio": {
@@ -163,19 +715,105 @@
       }
     },
     {
-      "name": "over_current_shutdown",
+      "name": "high_device_temp_stop_charge",
       "type": "threshold",
-      "source": "RS485_1:1:current",
+      "source": "RS485_1:1:device_temp",
+      "operator": ">=",
+      "threshold": 75,
+      "consecutive": 3,
+      "action": {
+        "type": "dual",
+        "alarm": {
+          "severity": "critical",
+          "code": "HIGH_DEVICE_TEMP",
+          "message": "MPPT device temperature too high, stop charging"
+        },
+        "modbus": {
+          "port": "RS485_1",
+          "slave_id": 1,
+          "register_type": "coil",
+          "address": "0x0000",
+          "value": 0
+        },
+        "gpio": {
+          "line": 17,
+          "value": 1
+        }
+      }
+    },
+    {
+      "name": "battery_over_voltage_stop_charge",
+      "type": "threshold",
+      "source": "RS485_1:1:battery_voltage",
+      "operator": ">=",
+      "threshold": 58,
+      "consecutive": 3,
+      "action": {
+        "type": "dual",
+        "alarm": {
+          "severity": "critical",
+          "code": "BATTERY_OVER_VOLTAGE",
+          "message": "Battery over-voltage, stop charging"
+        },
+        "modbus": {
+          "port": "RS485_1",
+          "slave_id": 1,
+          "register_type": "coil",
+          "address": "0x0000",
+          "value": 0
+        },
+        "gpio": {
+          "line": 17,
+          "value": 1
+        }
+      }
+    },
+    {
+      "name": "low_soc_stop_load",
+      "type": "threshold",
+      "source": "RS485_1:1:battery_soc",
+      "operator": "<=",
+      "threshold": 20,
+      "consecutive": 3,
+      "action": {
+        "type": "dual",
+        "alarm": {
+          "severity": "warning",
+          "code": "LOW_SOC",
+          "message": "Battery SOC low, turn off load output"
+        },
+        "modbus": {
+          "port": "RS485_1",
+          "slave_id": 1,
+          "register_type": "coil",
+          "address": "0x0002",
+          "value": 0
+        },
+        "gpio": {
+          "line": 17,
+          "value": 1
+        }
+      }
+    },
+    {
+      "name": "over_load_current_stop_load",
+      "type": "threshold",
+      "source": "RS485_1:1:load_current",
       "operator": ">",
       "threshold": 20,
       "consecutive": 2,
       "action": {
         "type": "dual",
+        "alarm": {
+          "severity": "critical",
+          "code": "OVER_LOAD_CURRENT",
+          "message": "Load over-current, turn off load output"
+        },
         "modbus": {
           "port": "RS485_1",
           "slave_id": 1,
-          "register_type": "holding",
-          "address": 101,
+          "register_type": "coil",
+          "address": "0x0002",
           "value": 0
         },
         "gpio": {
@@ -185,7 +823,7 @@
       }
     },
     {
-      "name": "rs485_1_comm_fail",
+      "name": "mppt_comm_fail",
       "type": "comm_fail",
       "source": "RS485_1:1",
       "consecutive": 5,
@@ -194,32 +832,18 @@
         "alarm": {
           "severity": "critical",
           "code": "COMM_FAIL",
-          "message": "RS485_1 slave 1 consecutive read failures"
+          "message": "MPPT controller consecutive Modbus read failures"
         },
         "modbus": {
           "port": "RS485_1",
           "slave_id": 1,
-          "register_type": "holding",
-          "address": 100,
+          "register_type": "coil",
+          "address": "0x0000",
           "value": 0
         },
         "gpio": {
           "line": 17,
           "value": 1
-        }
-      }
-    },
-    {
-      "name": "rs485_2_comm_fail",
-      "type": "comm_fail",
-      "source": "RS485_2:1",
-      "consecutive": 5,
-      "action": {
-        "type": "alarm",
-        "alarm": {
-          "severity": "warning",
-          "code": "COMM_FAIL",
-          "message": "RS485_2 slave 1 consecutive read failures"
         }
       }
     }

@@ -2,6 +2,7 @@ import operator
 import threading
 import time
 
+from .decode import parse_address
 from .logutil import logger
 
 
@@ -148,9 +149,29 @@ class RuleEngine:
         if not port:
             logger.error("Safety action port not found: %s", port_name)
             return False
-        return port.write_register(
-            slave_id=spec["slave_id"],
-            address=spec["address"],
-            value=spec["value"],
-            register_type=spec.get("register_type", "holding"),
-        )
+        address = parse_address(spec["address"])
+        register_type = spec.get("register_type", "holding")
+        value = spec["value"]
+        if register_type == "coil":
+            return port.write_coil(
+                slave_id=spec["slave_id"],
+                address=address,
+                value=value,
+            )
+        if register_type == "holding":
+            values = spec.get("values")
+            if values is not None:
+                return port.write_registers(
+                    slave_id=spec["slave_id"],
+                    address=address,
+                    values=values,
+                    register_type="holding",
+                )
+            return port.write_register(
+                slave_id=spec["slave_id"],
+                address=address,
+                value=value,
+                register_type="holding",
+            )
+        logger.error("Unsupported Modbus write register_type: %s", register_type)
+        return False
