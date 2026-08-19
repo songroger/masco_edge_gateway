@@ -143,7 +143,28 @@ class RuleEngine:
         return self.gpio.set_line(int(line), value)
 
     def _modbus_action(self, action):
+        """Execute one Modbus write, or a sequence (list) for multi-step control.
+
+        IPower-Plus needs: coil 0x11=1 (remote) then coil 0x0F=0 (stop).
+        Configure as ``\"modbus\": [ {...}, {...} ]``.
+        """
         spec = action.get("modbus") or action
+        if isinstance(spec, list):
+            if not spec:
+                logger.error("Empty Modbus action sequence")
+                return False
+            ok = True
+            for step in spec:
+                if not self._modbus_write_one(step):
+                    ok = False
+                    break
+            return ok
+        return self._modbus_write_one(spec)
+
+    def _modbus_write_one(self, spec):
+        if not isinstance(spec, dict):
+            logger.error("Modbus action must be an object: %r", spec)
+            return False
         port_name = spec.get("port")
         port = self.ports.get(port_name)
         if not port:
@@ -151,12 +172,11 @@ class RuleEngine:
             return False
         address = parse_address(spec["address"])
         register_type = spec.get("register_type", "holding")
-        value = spec["value"]
         if register_type == "coil":
             return port.write_coil(
                 slave_id=spec["slave_id"],
                 address=address,
-                value=value,
+                value=spec["value"],
             )
         if register_type == "holding":
             values = spec.get("values")
@@ -167,10 +187,13 @@ class RuleEngine:
                     values=values,
                     register_type="holding",
                 )
+            if "value" not in spec:
+                logger.error("Holding write missing value/values")
+                return False
             return port.write_register(
                 slave_id=spec["slave_id"],
                 address=address,
-                value=value,
+                value=spec["value"],
                 register_type="holding",
             )
         logger.error("Unsupported Modbus write register_type: %s", register_type)

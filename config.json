@@ -683,6 +683,234 @@
           ]
         }
       ]
+    },
+    {
+      "name": "RS485_2",
+      "port": "/dev/ttyS4",
+      "baudrate": 115200,
+      "bytesize": 8,
+      "parity": "N",
+      "stopbits": 1,
+      "timeout": 2,
+      "devices": [
+        {
+          "slave_id": 3,
+          "model": "IPOWER_PLUS",
+          "parameters": [
+            {
+              "name": "clear_fault",
+              "address": "0x0013",
+              "register_type": "coil",
+              "data_type": "bool",
+              "scale": 1,
+              "unit": ""
+            },
+            {
+              "name": "remote_control",
+              "address": "0x0011",
+              "register_type": "coil",
+              "data_type": "bool",
+              "scale": 1,
+              "unit": ""
+            },
+            {
+              "name": "inverter_run",
+              "address": "0x000F",
+              "register_type": "coil",
+              "data_type": "bool",
+              "scale": 1,
+              "unit": ""
+            },
+            {
+              "name": "power_save_enable",
+              "address": "0x0004",
+              "register_type": "coil",
+              "data_type": "bool",
+              "scale": 1,
+              "unit": ""
+            },
+            {
+              "name": "device_over_temp",
+              "address": "0x2000",
+              "register_type": "discrete",
+              "data_type": "bool",
+              "scale": 1,
+              "unit": ""
+            },
+            {
+              "name": "input_voltage",
+              "address": "0x3108",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "V"
+            },
+            {
+              "name": "input_current",
+              "address": "0x3109",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "A"
+            },
+            {
+              "name": "input_power",
+              "address": "0x310A",
+              "register_type": "input",
+              "data_type": "uint32",
+              "byte_order": "CDAB",
+              "scale": 0.01,
+              "unit": "W"
+            },
+            {
+              "name": "output_voltage",
+              "address": "0x310C",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "V"
+            },
+            {
+              "name": "output_current",
+              "address": "0x310D",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "A"
+            },
+            {
+              "name": "output_power",
+              "address": "0x310E",
+              "register_type": "input",
+              "data_type": "uint32",
+              "byte_order": "CDAB",
+              "scale": 0.01,
+              "unit": "W"
+            },
+            {
+              "name": "device_temp",
+              "address": "0x3111",
+              "register_type": "input",
+              "data_type": "int16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "℃"
+            },
+            {
+              "name": "heatsink_temp",
+              "address": "0x3112",
+              "register_type": "input",
+              "data_type": "int16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "℃"
+            },
+            {
+              "name": "device_status",
+              "address": "0x3202",
+              "register_type": "input",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 1,
+              "unit": ""
+            },
+            {
+              "name": "ac_voltage_set",
+              "address": "0x9022",
+              "register_type": "holding",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "V"
+            },
+            {
+              "name": "ac_frequency_set",
+              "address": "0x9023",
+              "register_type": "holding",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "Hz"
+            },
+            {
+              "name": "vin_low_limit",
+              "address": "0x902F",
+              "register_type": "holding",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "V"
+            },
+            {
+              "name": "vin_low_limit_5s",
+              "address": "0x9030",
+              "register_type": "holding",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "V"
+            },
+            {
+              "name": "vin_low_recover",
+              "address": "0x9031",
+              "register_type": "holding",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "V"
+            },
+            {
+              "name": "vin_high_recover",
+              "address": "0x9032",
+              "register_type": "holding",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "V"
+            },
+            {
+              "name": "vin_high_limit_5s",
+              "address": "0x9033",
+              "register_type": "holding",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "V"
+            },
+            {
+              "name": "vin_high_limit",
+              "address": "0x9034",
+              "register_type": "holding",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "V"
+            },
+            {
+              "name": "iin_high_limit",
+              "address": "0x9035",
+              "register_type": "holding",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "A"
+            },
+            {
+              "name": "iin_high_recover",
+              "address": "0x9036",
+              "register_type": "holding",
+              "data_type": "uint16",
+              "byte_order": "AB",
+              "scale": 0.01,
+              "unit": "A"
+            }
+          ]
+        }
+      ]
     }
   ],
 
@@ -841,6 +1069,184 @@
           "address": "0x0000",
           "value": 0
         },
+        "gpio": {
+          "line": 17,
+          "value": 1
+        }
+      }
+    },
+    {
+      "name": "inverter_over_temp_stop",
+      "type": "threshold",
+      "source": "RS485_2:3:device_over_temp",
+      "operator": "==",
+      "threshold": 1,
+      "consecutive": 2,
+      "action": {
+        "type": "dual",
+        "alarm": {
+          "severity": "critical",
+          "code": "INVERTER_OVER_TEMP",
+          "message": "Inverter over-temperature, stop output"
+        },
+        "modbus": [
+          {
+            "port": "RS485_2",
+            "slave_id": 3,
+            "register_type": "coil",
+            "address": "0x0011",
+            "value": 1
+          },
+          {
+            "port": "RS485_2",
+            "slave_id": 3,
+            "register_type": "coil",
+            "address": "0x000F",
+            "value": 0
+          }
+        ],
+        "gpio": {
+          "line": 17,
+          "value": 1
+        }
+      }
+    },
+    {
+      "name": "inverter_high_temp_stop",
+      "type": "threshold",
+      "source": "RS485_2:3:device_temp",
+      "operator": ">=",
+      "threshold": 75,
+      "consecutive": 3,
+      "action": {
+        "type": "dual",
+        "alarm": {
+          "severity": "critical",
+          "code": "INVERTER_HIGH_TEMP",
+          "message": "Inverter internal temperature too high, stop output"
+        },
+        "modbus": [
+          {
+            "port": "RS485_2",
+            "slave_id": 3,
+            "register_type": "coil",
+            "address": "0x0011",
+            "value": 1
+          },
+          {
+            "port": "RS485_2",
+            "slave_id": 3,
+            "register_type": "coil",
+            "address": "0x000F",
+            "value": 0
+          }
+        ],
+        "gpio": {
+          "line": 17,
+          "value": 1
+        }
+      }
+    },
+    {
+      "name": "inverter_over_current_stop",
+      "type": "threshold",
+      "source": "RS485_2:3:output_current",
+      "operator": ">",
+      "threshold": 20,
+      "consecutive": 2,
+      "action": {
+        "type": "dual",
+        "alarm": {
+          "severity": "critical",
+          "code": "INVERTER_OVER_CURRENT",
+          "message": "Inverter output over-current, stop output"
+        },
+        "modbus": [
+          {
+            "port": "RS485_2",
+            "slave_id": 3,
+            "register_type": "coil",
+            "address": "0x0011",
+            "value": 1
+          },
+          {
+            "port": "RS485_2",
+            "slave_id": 3,
+            "register_type": "coil",
+            "address": "0x000F",
+            "value": 0
+          }
+        ],
+        "gpio": {
+          "line": 17,
+          "value": 1
+        }
+      }
+    },
+    {
+      "name": "inverter_input_low_voltage_stop",
+      "type": "threshold",
+      "source": "RS485_2:3:input_voltage",
+      "operator": "<=",
+      "threshold": 42,
+      "consecutive": 3,
+      "action": {
+        "type": "dual",
+        "alarm": {
+          "severity": "critical",
+          "code": "INVERTER_INPUT_LOW",
+          "message": "Inverter DC input under-voltage, stop output"
+        },
+        "modbus": [
+          {
+            "port": "RS485_2",
+            "slave_id": 3,
+            "register_type": "coil",
+            "address": "0x0011",
+            "value": 1
+          },
+          {
+            "port": "RS485_2",
+            "slave_id": 3,
+            "register_type": "coil",
+            "address": "0x000F",
+            "value": 0
+          }
+        ],
+        "gpio": {
+          "line": 17,
+          "value": 1
+        }
+      }
+    },
+    {
+      "name": "inverter_comm_fail",
+      "type": "comm_fail",
+      "source": "RS485_2:3",
+      "consecutive": 5,
+      "action": {
+        "type": "dual",
+        "alarm": {
+          "severity": "critical",
+          "code": "COMM_FAIL",
+          "message": "Inverter consecutive Modbus read failures"
+        },
+        "modbus": [
+          {
+            "port": "RS485_2",
+            "slave_id": 3,
+            "register_type": "coil",
+            "address": "0x0011",
+            "value": 1
+          },
+          {
+            "port": "RS485_2",
+            "slave_id": 3,
+            "register_type": "coil",
+            "address": "0x000F",
+            "value": 0
+          }
+        ],
         "gpio": {
           "line": 17,
           "value": 1
