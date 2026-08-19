@@ -7,6 +7,9 @@ from .logutil import logger
 
 
 BIT_TYPES = ("coil", "discrete")
+# Modbus RTU 单帧实用上限（寄存器约 125；线圈可更大）
+DEFAULT_MAX_COUNT = 125
+DEFAULT_MAX_COUNT_BITS = 256
 
 
 def now_str():
@@ -17,7 +20,28 @@ def _param_address(param):
     return parse_address(param["address"])
 
 
-def build_batches(parameters, max_gap, max_count):
+def _param_span(param):
+    start = _param_address(param)
+    return start, start + register_count(param["data_type"])
+
+
+def build_batches(parameters, max_gap=0, max_count=DEFAULT_MAX_COUNT,
+                  max_gap_bits=None, max_count_bits=None):
+    """Merge parameters into as few Modbus reads as possible.
+
+    Strategy (per register_type):
+    1. Sort by address.
+    2. Always merge overlapping or back-to-back spans (e.g. 0~10 + 11~20 → one read).
+    3. Also bridge holes up to ``max_gap`` (registers) / ``max_gap_bits`` (coils),
+       while keeping the request size ≤ ``max_count`` / ``max_count_bits``.
+
+    Returns list of ``(register_type, start_address, count, [params...])``.
+    """
+    if max_gap_bits is None:
+        max_gap_bits = max_gap
+    if max_count_bits is None:
+        max_count_bits = DEFAULT_MAX_COUNT_BITS
+
     grouped = {}
     for param in parameters:
         grouped.setdefault(param.get("register_type", "holding"), []).append(param)
@@ -25,27 +49,51 @@ def build_batches(parameters, max_gap, max_count):
     batches = []
     for register_type, items in grouped.items():
         items = sorted(items, key=_param_address)
-        current = []
-        start = end = None
-        for param in items:
-            p_start = _param_address(param)
-            p_end = p_start + register_count(param["data_type"])
-            if not current:
-                current = [param]
-                start, end = p_start, p_end
-                continue
-            merged_end = max(end, p_end)
-            gap_ok = p_start <= end + max_gap
-            size_ok = (merged_end - start) <= max_count
-            if gap_ok and size_ok:
-                current.append(param)
-                end = merged_end
-            else:
-                batches.append((register_type, start, end - start, current))
-                current = [param]
-                start, end = p_start, p_end
-        if current:
-            batches.append((register_type, start, end - start, current))
+        gap_limit = max_gap_bits if register_type in BIT_TYPES else max_gap
+        size_limit = max_count_bits if register_type in BIT_TYPES else max_count
+        batches.extend(
+            _pack_spans(register_type, items, gap_limit, size_limit)
+        )
+    return batches
+
+
+def _pack_spans(register_type, items, max_gap, max_count):
+    """Greedy left-to-right pack of sorted parameter spans into read windows."""
+    if not items:
+        return []
+
+    batches = []
+    current = []
+    start = end = None
+
+    for param in items:
+        p_start, p_end = _param_span(param)
+        if not current:
+            current = [param]
+            start, end = p_start, p_end
+            continue
+
+        # Hole between current window end and next parameter start (0 = adjacent).
+        hole = max(0, p_start - end)
+        merged_end = max(end, p_end)
+        merged_count = merged_end - start
+
+        # Adjacent/overlap always merge when size allows; else allow hole ≤ max_gap.
+        contiguous = hole == 0
+        gap_ok = contiguous or hole <= max_gap
+        size_ok = merged_count <= max_count
+
+        if gap_ok and size_ok:
+            current.append(param)
+            end = merged_end
+            continue
+
+        batches.append((register_type, start, end - start, current))
+        current = [param]
+        start, end = p_start, p_end
+
+    if current:
+        batches.append((register_type, start, end - start, current))
     return batches
 
 
@@ -54,13 +102,70 @@ class Collector:
         self.config = config
         self.ports = ports
         self.retry = int(config.collect.get("retry", 0))
-        self.max_gap = int(config.collect.get("batch_max_gap", 0))
-        self.max_count = int(config.collect.get("batch_max_count", 64))
+        self.max_gap = int(config.collect.get("batch_max_gap", 16))
+        self.max_count = int(config.collect.get("batch_max_count", DEFAULT_MAX_COUNT))
+        self.max_gap_bits = int(
+            config.collect.get("batch_max_gap_bits", max(self.max_gap, 32))
+        )
+        self.max_count_bits = int(
+            config.collect.get("batch_max_count_bits", DEFAULT_MAX_COUNT_BITS)
+        )
+        # Precompute read windows once per device (config hot-reload rebuilds Collector).
+        self._batch_cache = {}
+        self._warm_batch_cache()
         workers = max(1, len(ports))
         self.executor = ThreadPoolExecutor(
             max_workers=workers,
             thread_name_prefix="rs485",
         )
+
+    def _warm_batch_cache(self):
+        for port_config in self.config.serial_ports:
+            for device in port_config.get("devices", []):
+                key = (port_config["name"], device["slave_id"])
+                batches = build_batches(
+                    device["parameters"],
+                    self.max_gap,
+                    self.max_count,
+                    self.max_gap_bits,
+                    self.max_count_bits,
+                )
+                self._batch_cache[key] = batches
+                n_params = len(device["parameters"])
+                n_reads = len(batches)
+                logger.info(
+                    "%s slave=%s Modbus batch: %s params → %s requests (gap=%s/%s count=%s/%s)",
+                    port_config["name"],
+                    device["slave_id"],
+                    n_params,
+                    n_reads,
+                    self.max_gap,
+                    self.max_gap_bits,
+                    self.max_count,
+                    self.max_count_bits,
+                )
+                for register_type, address, count, params in batches:
+                    logger.debug(
+                        "  batch %s addr=0x%04X count=%s points=%s",
+                        register_type,
+                        address,
+                        count,
+                        len(params),
+                    )
+
+    def _batches_for(self, port_name, device):
+        key = (port_name, device["slave_id"])
+        batches = self._batch_cache.get(key)
+        if batches is None:
+            batches = build_batches(
+                device["parameters"],
+                self.max_gap,
+                self.max_count,
+                self.max_gap_bits,
+                self.max_count_bits,
+            )
+            self._batch_cache[key] = batches
+        return batches
 
     def close(self):
         try:
@@ -157,7 +262,7 @@ class Collector:
             slave_id = device["slave_id"]
             device_key = "%s:%s" % (port_name, slave_id)
             device_ok = False
-            batches = build_batches(device["parameters"], self.max_gap, self.max_count)
+            batches = self._batches_for(port_name, device)
             decoded = {}
 
             for register_type, address, count, params in batches:

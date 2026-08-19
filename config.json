@@ -33,8 +33,10 @@
     "upload_interval": 60,
     "request_timeout": 2,
     "retry": 2,
-    "batch_max_gap": 8,
-    "batch_max_count": 64
+    "batch_max_gap": 32,
+    "batch_max_count": 125,
+    "batch_max_gap_bits": 64,
+    "batch_max_count_bits": 256
   },
 
   "watchdog": {

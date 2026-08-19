@@ -274,7 +274,9 @@ Ctrl+C / stop() ──► watchdog.stopping + _close_runtime
 
 - 两路（或多路）RS485 **并发采集**，同一总线内仍按从站串行
 - 每路多从站、多参数
-- 相邻寄存器 **批量读取**（`batch_max_gap` / `batch_max_count`）
+- 相邻 / 重叠寄存器 **自动合并批量读**（`batch_max_gap` / `batch_max_count`；线圈另有 `batch_max_gap_bits` / `batch_max_count_bits`）
+- 例：测点 `0~10` 与 `11~20` 合并为一次读 21 个寄存器；空洞 ≤ gap 时也会桥接，受单帧 `max_count`（默认 125）限制
+- 启动时预计算并日志输出：`N params → M requests`，避免每轮重复规划
 - 读 Holding / Input Register；写 Holding Register
 - 读失败按 `collect.retry` 重试；`request_timeout` 作为串口超时
 - 连接失败自动重连；兼容 pymodbus `slave` / `device_id`
