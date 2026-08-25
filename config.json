@@ -688,7 +688,7 @@
     },
     {
       "name": "RS485_2",
-      "port": "/dev/ttyS4",
+      "port": "/dev/ttyS1",
       "baudrate": 115200,
       "bytesize": 8,
       "parity": "N",
