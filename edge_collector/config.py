@@ -77,7 +77,7 @@ def normalize_config(data):
                  "alarm_topic": "%s/%s" % (topics.get("event", "").rstrip("/"), gateway.get("sn", gateway.get("id"))),
                  "command_topic": "%s/%s" % (topics.get("command", "").rstrip("/"), gateway.get("sn", gateway.get("id"))),
                  "config_ack_topic": "%s/%s" % (topics.get("event", "").rstrip("/"), gateway.get("sn", gateway.get("id"))),
-                 "refresh_topic": topics.get("refresh"),
+                 "refresh_topic": "%s/%s" % (topics.get("refresh", "").rstrip("/"), gateway.get("sn", gateway.get("id"))),
                  "tls": {"enable": (mqtt.get("tls") or {}).get("enabled", False),
                          "ca_certs": (mqtt.get("tls") or {}).get("ca_file"),
                          "certfile": (mqtt.get("tls") or {}).get("cert_file"),

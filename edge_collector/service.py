@@ -231,6 +231,21 @@ class CollectorService:
             (" message=" + result["message"]) if result.get("message") else "",
         )
 
+    def _handle_refresh(self):
+        request = self.mqtt.poll_refresh() if self.mqtt else None
+        if request is None:
+            return
+        if not isinstance(request, dict) or request.get("sn") != self.config.sn:
+            logger.warning("MQTT refresh rejected: sn mismatch")
+            return
+        try:
+            data, _, _ = self.collector.collect_once()
+            payload = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
+            self.mqtt.send_data(self.config.mqtt["topic"], payload)
+            logger.info("MQTT refresh completed: %s readings", len(data.get("readings", [])))
+        except Exception:
+            logger.exception("MQTT refresh failed")
+
     def _recover_sqlite(self):
         """Reopen or recreate the SQLite store and reattach it to MQTT."""
         logger.warning("Recovering SQLite module")
@@ -380,6 +395,7 @@ class CollectorService:
             try:
                 self._maybe_apply_remote_config()
                 self._handle_command()
+                self._handle_refresh()
             except Exception:
                 logger.exception("Config hot-reload step failed")
 

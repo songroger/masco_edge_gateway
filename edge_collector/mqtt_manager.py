@@ -14,6 +14,7 @@ class MQTTManager:
         self.connected = False
         self._config_queue = queue.Queue()
         self._command_queue = queue.Queue()
+        self._refresh_queue = queue.Queue()
         self.client = self._create_client()
         self._configure_auth()
         self._configure_tls()
@@ -65,6 +66,10 @@ class MQTTManager:
             if command_topic:
                 client.subscribe(command_topic, qos=int(self.config.get("qos", 0)))
                 logger.info("MQTT subscribed command topic: %s", command_topic)
+            refresh_topic = self.config.get("refresh_topic")
+            if refresh_topic:
+                client.subscribe(refresh_topic, qos=int(self.config.get("qos", 0)))
+                logger.info("MQTT subscribed refresh topic: %s", refresh_topic)
         else:
             self.connected = False
             logger.error("MQTT connect failed: %s", reason_code)
@@ -77,11 +82,18 @@ class MQTTManager:
     def on_message(self, client, userdata, message):
         config_topic = self.config.get("config_topic")
         command_topic = self.config.get("command_topic")
+        refresh_topic = self.config.get("refresh_topic")
         if command_topic and message.topic == command_topic:
             try:
                 self._command_queue.put(json.loads(message.payload.decode("utf-8")))
             except Exception as exc:
                 logger.error("Invalid command payload: %s", exc)
+            return
+        if refresh_topic and message.topic == refresh_topic:
+            try:
+                self._refresh_queue.put(json.loads(message.payload.decode("utf-8")))
+            except Exception as exc:
+                logger.error("Invalid refresh payload: %s", exc)
             return
         if not config_topic or message.topic != config_topic:
             return
@@ -104,6 +116,12 @@ class MQTTManager:
     def poll_command(self):
         try:
             return self._command_queue.get_nowait()
+        except queue.Empty:
+            return None
+
+    def poll_refresh(self):
+        try:
+            return self._refresh_queue.get_nowait()
         except queue.Empty:
             return None
 
@@ -215,7 +233,7 @@ class MQTTManager:
             tls.get("ca_certs"),
             tls.get("certfile"),
                  tls.get("keyfile"),
-            config.get("config_topic"), config.get("command_topic"),
+            config.get("config_topic"), config.get("command_topic"), config.get("refresh_topic"),
         )
 
     def connection_signature(self):
