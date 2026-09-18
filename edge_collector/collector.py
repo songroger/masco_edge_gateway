@@ -1,6 +1,6 @@
 import time
 from concurrent.futures import ThreadPoolExecutor, wait
-from datetime import datetime
+from datetime import datetime, timezone
 
 from .decode import decode_registers, parse_address, register_count, scale_value
 from .logutil import logger
@@ -13,7 +13,7 @@ DEFAULT_MAX_COUNT_BITS = 256
 
 
 def now_str():
-    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    return datetime.now(timezone.utc).isoformat(timespec="microseconds").replace("+00:00", "Z")
 
 
 def _param_address(param):
@@ -121,6 +121,8 @@ class Collector:
 
     def _warm_batch_cache(self):
         for port_config in self.config.serial_ports:
+            if not port_config.get("enabled", True):
+                continue
             for device in port_config.get("devices", []):
                 key = (port_config["name"], device["slave_id"])
                 batches = build_batches(
@@ -191,16 +193,16 @@ class Collector:
     def collect_once(self):
         timestamp = int(time.time())
         data = {
-            "device_id": self.config.device_id,
-            "timestamp": timestamp,
-            "datetime": now_str(),
-            "data": {},
-            "comm": {},
+            "sn": self.config.sn,
+            "timestamp": now_str(),
+            "readings": [],
         }
         values = {}
         comm_status = {}
         future_map = {}
         for port_config in self.config.serial_ports:
+            if not port_config.get("enabled", True):
+                continue
             port = self.ports.get(port_config["name"])
             if not port:
                 comm_status.update(self._mark_port_failed(port_config))
@@ -230,11 +232,9 @@ class Collector:
                 comm_status.update(self._mark_port_failed(port_config))
                 continue
             values.update(port_values)
-            data["data"].update(port_data)
+            data["readings"].extend(port_data.get("readings", []))
             comm_status.update(port_comm)
 
-        for source, ok in comm_status.items():
-            data["comm"][source] = "ok" if ok else "fail"
         return data, values, comm_status
 
     def _mark_port_failed(self, port_config):
@@ -286,7 +286,7 @@ class Collector:
                             parameter.get("scale", 1),
                             parameter.get("offset", 0),
                         )
-                        decoded[parameter["name"]] = (parameter, value)
+                        decoded[parameter["name"]] = (parameter, raw, value, [int(raw)])
                     continue
 
                 registers = port.read_registers(
@@ -317,7 +317,7 @@ class Collector:
                         parameter.get("offset", 0),
                     )
                     if value is not None:
-                        decoded[parameter["name"]] = (parameter, value)
+                        decoded[parameter["name"]] = (parameter, raw, value, list(slice_regs))
 
             for parameter in device["parameters"]:
                 source = "%s:%s:%s" % (port_name, slave_id, parameter["name"])
@@ -326,14 +326,16 @@ class Collector:
                     comm_status[source] = False
                     logger.warning("Read failed: %s", source)
                     continue
-                _, value = item
+                _, raw, value, raw_registers = item
                 comm_status[source] = True
                 device_ok = True
                 values[source] = value
-                data[source] = {
+                data.setdefault("readings", []).append({
+                    "slave_id": slave_id,
+                    "point_name": parameter["name"],
                     "value": value,
-                    "unit": parameter.get("unit"),
-                }
+                    "raw": raw_registers,
+                })
                 logger.info("%s = %s %s", source, value, parameter.get("unit", ""))
 
             comm_status[device_key] = device_ok

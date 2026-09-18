@@ -1,0 +1,1120 @@
+{
+  "sn": "GW-003",
+  "timestamp": "2026-09-10T18:45:47.917496895Z",
+  "readings": [
+    {
+      "slave_id": 1,
+      "point_name": "rtc_year_month",
+      "value": 6665,
+      "raw": [
+        6665
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "rtc_day_hour",
+      "value": 2578,
+      "raw": [
+        2578
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "rtc_min_sec",
+      "value": 11285,
+      "raw": [
+        11285
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "rtc_weekday_reserved",
+      "value": 1032,
+      "raw": [
+        1032
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "di_status",
+      "value": 0,
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "do_status",
+      "value": 0,
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch1_8_switch_status",
+      "value": 1,
+      "raw": [
+        1
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch1_8_close_bits",
+      "value": 0,
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch1_8_open_bits",
+      "value": 0,
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch1_status",
+      "value": 10,
+      "raw": [
+        10
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch2_status",
+      "value": 0,
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch3_status",
+      "value": 61166,
+      "raw": [
+        61166
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch4_status",
+      "value": 61166,
+      "raw": [
+        61166
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch5_status",
+      "value": 65535,
+      "raw": [
+        65535
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch6_status",
+      "value": 65535,
+      "raw": [
+        65535
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch7_status",
+      "value": 65535,
+      "raw": [
+        65535
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch8_status",
+      "value": 65535,
+      "raw": [
+        65535
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch1_current",
+      "value": 0,
+      "unit": "A",
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch2_current",
+      "value": 0,
+      "unit": "A",
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch3_current",
+      "value": 0,
+      "unit": "A",
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch4_current",
+      "value": 0,
+      "unit": "A",
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch5_current",
+      "value": 0,
+      "unit": "A",
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch6_current",
+      "value": 0,
+      "unit": "A",
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch7_current",
+      "value": 0,
+      "unit": "A",
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch8_current",
+      "value": 0,
+      "unit": "A",
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch1_current_thd",
+      "value": 0,
+      "unit": "%",
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch2_current_thd",
+      "value": 0,
+      "unit": "%",
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch3_current_thd",
+      "value": 0,
+      "unit": "%",
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch4_current_thd",
+      "value": 0,
+      "unit": "%",
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch5_current_thd",
+      "value": 0,
+      "unit": "%",
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch6_current_thd",
+      "value": 0,
+      "unit": "%",
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch7_current_thd",
+      "value": 0,
+      "unit": "%",
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch8_current_thd",
+      "value": 0,
+      "unit": "%",
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch1_active_power",
+      "value": 0,
+      "unit": "kW",
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch2_active_power",
+      "value": 0,
+      "unit": "kW",
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch3_active_power",
+      "value": 0,
+      "unit": "kW",
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch4_active_power",
+      "value": 0,
+      "unit": "kW",
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch5_active_power",
+      "value": 0,
+      "unit": "kW",
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch6_active_power",
+      "value": 0,
+      "unit": "kW",
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch7_active_power",
+      "value": 0,
+      "unit": "kW",
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch8_active_power",
+      "value": 0,
+      "unit": "kW",
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch1_active_energy",
+      "value": 4849.66,
+      "unit": "kWh",
+      "raw": [
+        74,
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch2_active_energy",
+      "value": 0,
+      "unit": "kWh",
+      "raw": [
+        0,
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch3_active_energy",
+      "value": 0,
+      "unit": "kWh",
+      "raw": [
+        0,
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch4_active_energy",
+      "value": 0,
+      "unit": "kWh",
+      "raw": [
+        0,
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch5_active_energy",
+      "value": 0,
+      "unit": "kWh",
+      "raw": [
+        0,
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch6_active_energy",
+      "value": 0,
+      "unit": "kWh",
+      "raw": [
+        0,
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch7_active_energy",
+      "value": 0,
+      "unit": "kWh",
+      "raw": [
+        0,
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch8_active_energy",
+      "value": 0,
+      "unit": "kWh",
+      "raw": [
+        0,
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch1_relay_on_time",
+      "value": 780140544,
+      "unit": "s",
+      "raw": [
+        11904,
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch2_relay_on_time",
+      "value": 0,
+      "unit": "s",
+      "raw": [
+        0,
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch3_relay_on_time",
+      "value": 0,
+      "unit": "s",
+      "raw": [
+        0,
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch4_relay_on_time",
+      "value": 0,
+      "unit": "s",
+      "raw": [
+        0,
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch5_relay_on_time",
+      "value": 0,
+      "unit": "s",
+      "raw": [
+        0,
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch6_relay_on_time",
+      "value": 0,
+      "unit": "s",
+      "raw": [
+        0,
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch7_relay_on_time",
+      "value": 0,
+      "unit": "s",
+      "raw": [
+        0,
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch8_relay_on_time",
+      "value": 0,
+      "unit": "s",
+      "raw": [
+        0,
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch1_relay_on_count",
+      "value": 99,
+      "unit": "count",
+      "raw": [
+        99
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch2_relay_on_count",
+      "value": 83,
+      "unit": "count",
+      "raw": [
+        83
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch3_relay_on_count",
+      "value": 78,
+      "unit": "count",
+      "raw": [
+        78
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch4_relay_on_count",
+      "value": 80,
+      "unit": "count",
+      "raw": [
+        80
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch5_relay_on_count",
+      "value": 0,
+      "unit": "count",
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch6_relay_on_count",
+      "value": 0,
+      "unit": "count",
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch7_relay_on_count",
+      "value": 0,
+      "unit": "count",
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "ch8_relay_on_count",
+      "value": 0,
+      "unit": "count",
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "voltage_a",
+      "value": 237.6,
+      "unit": "V",
+      "raw": [
+        2376
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "voltage_b",
+      "value": 0,
+      "unit": "V",
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "voltage_c",
+      "value": 0,
+      "unit": "V",
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "voltage_freq",
+      "value": 49.96,
+      "unit": "Hz",
+      "raw": [
+        4996
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "slave_address",
+      "value": 1,
+      "raw": [
+        1
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "baud_rate",
+      "value": 9600,
+      "raw": [
+        9600
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "di1_link_func_mode",
+      "value": 1,
+      "raw": [
+        1
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "di1_link_channels",
+      "value": 65535,
+      "raw": [
+        65535
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "di1_link_action",
+      "value": 65535,
+      "raw": [
+        65535
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "di2_link_func_mode",
+      "value": 1,
+      "raw": [
+        1
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "di2_link_channels",
+      "value": 65535,
+      "raw": [
+        65535
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "di2_link_action",
+      "value": 65535,
+      "raw": [
+        65535
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "longitude",
+      "value": 120,
+      "raw": [
+        17136,
+        24904
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "latitude",
+      "value": 32,
+      "raw": [
+        16894,
+        52429
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "sunrise_hour_min",
+      "value": 1320,
+      "raw": [
+        1320
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "sunset_hour_min",
+      "value": 4619,
+      "raw": [
+        4619
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "timer_task1_channels",
+      "value": 1,
+      "raw": [
+        1
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "timer_task1_weekday_hour",
+      "value": 4107,
+      "raw": [
+        4107
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "timer_task1_min_action",
+      "value": 11265,
+      "raw": [
+        11265
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "timer_task2_channels",
+      "value": 1,
+      "raw": [
+        1
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "timer_task2_weekday_hour",
+      "value": 4107,
+      "raw": [
+        4107
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "timer_task2_min_action",
+      "value": 12288,
+      "raw": [
+        12288
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "timer_task3_channels",
+      "value": 0,
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "timer_task3_weekday_hour",
+      "value": 0,
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "timer_task3_min_action",
+      "value": 0,
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "timer_task4_channels",
+      "value": 0,
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "timer_task4_weekday_hour",
+      "value": 0,
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "timer_task4_min_action",
+      "value": 0,
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "timer_task5_channels",
+      "value": 0,
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "timer_task5_weekday_hour",
+      "value": 0,
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "timer_task5_min_action",
+      "value": 0,
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "sched_task1_channels",
+      "value": 1,
+      "raw": [
+        1
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "sched_task1_year_month",
+      "value": 6665,
+      "raw": [
+        6665
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "sched_task1_day_hour",
+      "value": 2572,
+      "raw": [
+        2572
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "sched_task1_min_action",
+      "value": 7681,
+      "raw": [
+        7681
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "sched_task2_channels",
+      "value": 0,
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "sched_task2_year_month",
+      "value": 1,
+      "raw": [
+        1
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "sched_task2_day_hour",
+      "value": 6665,
+      "raw": [
+        6665
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "sched_task2_min_action",
+      "value": 2572,
+      "raw": [
+        2572
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "sched_task3_channels",
+      "value": 0,
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "sched_task3_year_month",
+      "value": 0,
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "sched_task3_day_hour",
+      "value": 0,
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "sched_task3_min_action",
+      "value": 0,
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "sched_task4_channels",
+      "value": 0,
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "sched_task4_year_month",
+      "value": 0,
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "sched_task4_day_hour",
+      "value": 0,
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "sched_task4_min_action",
+      "value": 0,
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "sched_task5_channels",
+      "value": 0,
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "sched_task5_year_month",
+      "value": 0,
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "sched_task5_day_hour",
+      "value": 0,
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    },
+    {
+      "slave_id": 1,
+      "point_name": "sched_task5_min_action",
+      "value": 0,
+      "raw": [
+        0
+      ],
+      "quality": "good"
+    }
+  ]
+}

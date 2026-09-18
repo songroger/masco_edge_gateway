@@ -10,3 +10,4 @@ dist/
 .vscode/
 edge_collector.db*
 main.spec
+data

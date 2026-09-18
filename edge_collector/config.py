@@ -1,6 +1,7 @@
 import json
 import os
 import tempfile
+from urllib.parse import urlparse
 from copy import deepcopy
 
 from .decode import parse_address, register_count
@@ -28,6 +29,69 @@ def _require(obj, keys, where):
             raise ConfigError("%s missing field: %s" % (where, key))
 
 
+def normalize_config(data):
+    """Normalize the documented gateway schema to the runtime schema."""
+    if "gateway" not in data or "collector" not in data:
+        return data
+    gateway = data.get("gateway") or {}
+    mqtt = data.get("mqtt") or {}
+    parsed = urlparse(mqtt.get("broker", "tcp://localhost:1883"))
+    topics = mqtt.get("topics") or {}
+    collector = data.get("collector") or {}
+    ports = []
+    for channel in collector.get("channels", []):
+        devices = []
+        for device in channel.get("devices", []):
+            devices.append({
+                "id": device.get("id"),
+                "slave_id": device.get("slave_id"),
+                "parameters": device.get("points", []),
+            })
+        ports.append({
+            "name": channel.get("id"), "enabled": channel.get("enabled", True),
+            "port": channel.get("device"), "baudrate": channel.get("baud_rate", 9600),
+            "bytesize": channel.get("data_bits", 8), "stopbits": channel.get("stop_bits", 1),
+            "parity": channel.get("parity", "N"), "timeout": collector.get("request_timeout_ms", 1000) / 1000,
+            "poll_ms": channel.get("poll_ms", collector.get("default_poll_ms", 60000)),
+            "devices": devices,
+        })
+    rules = []
+    for rule in data.get("rules", []):
+        r = dict(rule)
+        r["name"] = r.get("id", "rule")
+        r["type"] = "comm_fail" if r.get("operator") == "COMM_ERROR" else r.get("type", "threshold")
+        r["source"] = "%s:%s:%s" % (r.get("channel_id"), r.get("device_id"), r.get("point_name"))
+        action = dict(r.get("action") or {})
+        if "channel_id" in action:
+            action["port"] = action.pop("channel_id")
+        r["action"] = action
+        rules.append(r)
+    result = {
+        "device_id": gateway.get("id", gateway.get("sn")),
+        "sn": gateway.get("sn", gateway.get("id")),
+        "mqtt": {"host": parsed.hostname or "localhost", "port": parsed.port or 1883,
+                 "client_id": gateway.get("id", gateway.get("sn")), "username": mqtt.get("username"),
+                 "password": mqtt.get("password"), "keepalive": mqtt.get("keep_alive_sec", 60),
+                 "qos": mqtt.get("qos", 0), "topic": topics.get("telemetry"),
+                 "config_topic": topics.get("config"), "alarm_topic": topics.get("event"),
+                 "config_ack_topic": topics.get("event"), "refresh_topic": topics.get("refresh"),
+                 "tls": {"enable": (mqtt.get("tls") or {}).get("enabled", False),
+                         "ca_certs": (mqtt.get("tls") or {}).get("ca_file"),
+                         "certfile": (mqtt.get("tls") or {}).get("cert_file"),
+                         "keyfile": (mqtt.get("tls") or {}).get("key_file"),
+                         "insecure": (mqtt.get("tls") or {}).get("insecure_skip_verify", False)}},
+        "database": {"path": (data.get("database") or {}).get("path", "./data/gateway.db"),
+                      "max_records": (data.get("database") or {}).get("max_rows", 200000)},
+        "collect": {"interval": collector.get("default_poll_ms", 60000) / 1000,
+                     "upload_interval": collector.get("default_poll_ms", 60000) / 1000,
+                     "request_timeout": collector.get("request_timeout_ms", 1000) / 1000,
+                     "retry": collector.get("retries", 0), "batch_max_gap": collector.get("batch_max_gap", 0),
+                     "batch_max_count": collector.get("batch_max_span", 125)},
+        "serial_ports": ports, "rules": rules,
+    }
+    return result
+
+
 def validate_config(data):
     _require(data, REQUIRED_ROOT, "config")
     _require(data["mqtt"], REQUIRED_MQTT, "mqtt")
@@ -43,8 +107,8 @@ def validate_config(data):
         if port["name"] in names:
             raise ConfigError("duplicate serial port name: %s" % port["name"])
         names.add(port["name"])
-        if not isinstance(port["devices"], list) or not port["devices"]:
-            raise ConfigError("%s.devices must be a non-empty list" % port["name"])
+        if not isinstance(port["devices"], list):
+            raise ConfigError("%s.devices must be a list" % port["name"])
         for j, device in enumerate(port["devices"]):
             _require(device, REQUIRED_DEVICE, "%s.devices[%s]" % (port["name"], j))
             for k, param in enumerate(device["parameters"]):
@@ -132,6 +196,7 @@ class Config:
     def load(self):
         with open(self.path, "r", encoding="utf-8") as handle:
             data = json.load(handle)
+        data = normalize_config(data)
         validate_config(data)
         self.data = data
         logger.info("Config loaded from %s", self.path)
@@ -146,6 +211,7 @@ class Config:
 
     def apply_dict(self, data, backup=True):
         data = unwrap_remote_payload(data)
+        data = normalize_config(data)
         validate_config(data)
         if backup and os.path.exists(self.path):
             backup_path = self.path + ".bak"
@@ -175,6 +241,10 @@ class Config:
     @property
     def device_id(self):
         return self.data["device_id"]
+
+    @property
+    def sn(self):
+        return self.data.get("sn", self.device_id)
 
     @property
     def mqtt(self):

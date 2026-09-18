@@ -1,0 +1,533 @@
+id: light-control
+name: ASL220-S8/16 调光驱动器
+version: 未标注
+source: docs/light-control.pdf
+models:
+  - ASL220-S8
+  - ASL220-S16
+comm:
+  protocol: Modbus-RTU
+  default_slave_id: 1
+  baudrate: 9600
+  bytesize: 8
+  parity: N
+  stopbits: 1
+  flow_control: false
+  address_format: hex
+  address_base: '0x00'
+  note: 协议只定义保持寄存器；读取功能码 0x03，写入功能码 0x10（一次最多写 16 个寄存器）。
+registers:
+  # 7.3.1 驱动器实时状态地址表
+  - address_hex: '0x0000'
+    address: 0
+    name: 当前时间（年/月）
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint8_pair
+    access: RW
+    note: 高字节=年(0~66)，低字节=月(1~12)
+  - address_hex: '0x0001'
+    address: 1
+    name: 当前时间（日/时）
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint8_pair
+    access: RW
+    note: 高字节=日(1~31)，低字节=时(0~23)
+  - address_hex: '0x0002'
+    address: 2
+    name: 当前时间（分/秒）
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint8_pair
+    access: RW
+    note: 高字节=分(0~59)，低字节=秒(0~59)
+  - address_hex: '0x0003'
+    address: 3
+    name: 星期/预留
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint8_pair
+    access: RW
+    note: 高字节=星期（0~6 对应星期天至星期六），低字节=预留
+  - address_hex: '0x0004'
+    address: 4
+    name: 开关量输入
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint16
+    access: R
+    note: bit0=DI1，bit1=DI2；0=无输入，1=有输入
+  - address_hex: '0x0005'
+    address: 5
+    name: 开关量输出
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint16
+    access: RW
+    fc_write: '0x10'
+    note: bit0=DO1，bit1=DO2；0=不闭合，1=闭合
+  - address_hex: '0x0006'
+    address: 6
+    name: 预留
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint16
+    access: R
+  - address_hex: '0x0007'
+    address: 7
+    name: 通道1-8开关状态
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint16
+    access: RW
+    fc_write: '0x10'
+    note: bit0~bit7 对应通道1~8；1=合，0=分
+  - address_hex: '0x0008'
+    address: 8
+    name: 预留
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint16
+    access: R
+  - address_hex: '0x0009'
+    address: 9
+    name: 写入通道1-8合状态位
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint16
+    access: W
+    fc_write: '0x10'
+    note: bit0~bit7 对应通道1~8；bit=1 时合闸
+  - address_hex: '0x000A'
+    address: 10
+    name: 预留
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint16
+    access: R
+  - address_hex: '0x000B'
+    address: 11
+    name: 写入通道1-8分状态位
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint16
+    access: W
+    fc_write: '0x10'
+    note: bit0~bit7 对应通道1~8；bit=1 时分闸
+  - address_range_hex: '0x000C-0x0013'
+    address_range: [12, 19]
+    name: 通道1-8状态
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint16
+    access: RW
+    fc_write: '0x10'
+    note: 每通道一个寄存器；0=分，1=合，0xFFFF=回路不可用，0xEEEE=回路故障，0x000A~0x0064=调光等级10~100
+  - address_range_hex: '0x0014-0x0023'
+    address_range: [20, 35]
+    name: 预留
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint16
+    access: R
+  - address_range_hex: '0x0024-0x0031'
+    address_range: [36, 49]
+    name: 通道1-8电流
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint16
+    scale: 100
+    access: R
+    unit: A
+    note: 文档标注精确到小数点后两位；保留原始连续地址范围。
+  - address_range_hex: '0x0032-0x003B'
+    address_range: [50, 59]
+    name: 预留
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint16
+    access: R
+  - address_range_hex: '0x003C-0x0043'
+    address_range: [60, 67]
+    name: 通道1-8电流谐波含量
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint16
+    scale: 10
+    access: R
+    unit: '%'
+  - address_range_hex: '0x0044-0x0053'
+    address_range: [68, 83]
+    name: 预留
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint16
+    access: R
+  - address_range_hex: '0x0054-0x005B'
+    address_range: [84, 91]
+    name: 通道1-8有功功率
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint16
+    scale: 1000
+    access: R
+    unit: kW
+  - address_range_hex: '0x005C-0x006B'
+    address_range: [92, 107]
+    name: 预留
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint16
+    access: R
+  - address_range_hex: '0x006C-0x0073'
+    address_range: [108, 115]
+    name: 通道1-8有功电能
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint32
+    scale: 1000
+    access: R
+    unit: kWh
+  - address_range_hex: '0x0074-0x009B'
+    address_range: [116, 155]
+    name: 预留
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint16
+    access: R
+  - address_range_hex: '0x009C-0x00A3'
+    address_range: [156, 163]
+    name: 通道1-8继电器闭合时间
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint32
+    access: R
+    unit: s
+  - address_range_hex: '0x00A4-0x00CB'
+    address_range: [164, 203]
+    name: 预留
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint16
+    access: R
+  - address_range_hex: '0x00CC-0x00D3'
+    address_range: [204, 211]
+    name: 通道1-8继电器闭合次数
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint16
+    access: R
+    unit: 次
+  - address_range_hex: '0x00D4-0x00E3'
+    address_range: [212, 227]
+    name: 预留
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint16
+    access: R
+  - address_range_hex: '0x00E4-0x00E6'
+    address_range: [228, 230]
+    name: A/B/C相电压
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint16
+    scale: 10
+    access: R
+    unit: V
+  - address_hex: '0x00E7'
+    address: 231
+    name: 电压频率
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint16
+    scale: 100
+    access: R
+    unit: Hz
+
+  # 7.3.2 参数设置地址表
+  - address_hex: '0x0101'
+    address: 257
+    name: 从机地址
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint8
+    access: RW
+    fc_write: '0x10'
+    note: 仅 210 系列可手动设置；范围1~63
+  - address_hex: '0x0102'
+    address: 258
+    name: 预留
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint16
+    access: R
+  - address_hex: '0x0103'
+    address: 259
+    name: 波特率
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint8
+    access: RW
+    fc_write: '0x10'
+    note: 2400/4800/9600/19200/38400
+  - address_hex: '0x0104'
+    address: 260
+    name: DI1联动功能/模式
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint8_pair
+    access: RW
+    fc_write: '0x10'
+    note: 高字节=功能（0关闭/1打开），低字节=模式（0:0→1；1:0→1、1→0）；仅210系列可手动设置
+  - address_hex: '0x0105'
+    address: 261
+    name: 预留
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint16
+    access: R
+  - address_hex: '0x0106'
+    address: 262
+    name: DI1联动开关关联回路
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint16
+    access: RW
+    fc_write: '0x10'
+    note: bit0~bit7 对应通道1~8；1=启用联动
+  - address_hex: '0x0107'
+    address: 263
+    name: 预留
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint16
+    access: R
+  - address_hex: '0x0108'
+    address: 264
+    name: DI1联动开关关联动作值
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint16
+    access: RW
+    fc_write: '0x10'
+    note: bit0~bit7 对应通道1~8；0=分，1=合
+  - address_hex: '0x0109'
+    address: 265
+    name: DI2联动功能/模式
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint8_pair
+    access: RW
+    fc_write: '0x10'
+    note: 高字节=功能（0关闭/1打开），低字节=模式（0:0→1；1:0→1、1→0）；仅210系列可手动设置
+  - address_hex: '0x010A'
+    address: 266
+    name: 预留
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint16
+    access: R
+  - address_hex: '0x010B'
+    address: 267
+    name: DI2联动开关关联回路
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint16
+    access: RW
+    fc_write: '0x10'
+    note: bit0~bit7 对应通道1~8；1=启用联动
+  - address_hex: '0x010C'
+    address: 268
+    name: 预留
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint16
+    access: R
+  - address_hex: '0x010D'
+    address: 269
+    name: DI2联动开关关联动作值
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint16
+    access: RW
+    fc_write: '0x10'
+    note: bit0~bit7 对应通道1~8；0=分，1=合
+
+  # 7.3.3 定时地址表
+  - address_range_hex: '0x1000-0x1001'
+    address_range: [4096, 4097]
+    name: 经度
+    kind: holding
+    fc_read: '0x03'
+    data_type: float32
+    access: RW
+    fc_write: '0x10'
+    note: 高寄存器在前；范围-180~180
+  - address_range_hex: '0x1002-0x1003'
+    address_range: [4098, 4099]
+    name: 纬度
+    kind: holding
+    fc_read: '0x03'
+    data_type: float32
+    access: RW
+    fc_write: '0x10'
+    note: 高寄存器在前；范围-90~90
+  - address_hex: '0x1004'
+    address: 4100
+    name: 日出时间（时/分）
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint8_pair
+    access: R
+    note: 高字节=时(0~23)，低字节=分(0~59)
+  - address_hex: '0x1005'
+    address: 4101
+    name: 日落时间（时/分）
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint8_pair
+    access: R
+    note: 高字节=时(0~23)，低字节=分(0~59)
+  - address_hex: '0x1006'
+    address: 4102
+    name: 预留
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint16
+    access: R
+  - address_hex: '0x1007'
+    address: 4103
+    name: 常规定时任务1回路设定
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint16
+    access: RW
+    fc_write: '0x10'
+    note: bit0~bit7 对应通道1~8；1=启用该通道定时，0=不启用
+  - address_hex: '0x1008'
+    address: 4104
+    name: 常规定时任务1执行时间（星期/时）
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint8_pair
+    access: RW
+    fc_write: '0x10'
+    note: 高字节bit0~bit6=星期天~星期六是否执行；低字节0~23=时，24=日升，25=日落
+  - address_hex: '0x1009'
+    address: 4105
+    name: 常规定时任务1执行时间（分）/操作
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint8_pair
+    access: RW
+    fc_write: '0x10'
+    note: 高字节=分(0~59)，低字节=操作（0=分，1=合）
+  - address_range_hex: '0x100A-0x107D'
+    address_range: [4106, 4221]
+    name: 常规定时任务2-31
+    kind: holding
+    fc_read: '0x03'
+    data_type: task4_registers
+    access: RW
+    fc_write: '0x10'
+    note: 每任务4个寄存器；结构同任务1：回路设定、星期/时、分/操作及文档定义的保留寄存器。任务N起始地址=0x1007+(N-1)*4。
+  - address_hex: '0x1100'
+    address: 4352
+    name: 预留
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint16
+    access: R
+  - address_hex: '0x1101'
+    address: 4353
+    name: 预约定时任务1回路设定
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint16
+    access: RW
+    fc_write: '0x10'
+    note: bit0~bit7 对应通道1~8；1=启用定时，0=不启用
+  - address_hex: '0x1102'
+    address: 4354
+    name: 预约定时任务1时间（年/月）
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint8_pair
+    access: RW
+    fc_write: '0x10'
+    note: 高字节=年(0~66)，低字节=月(1~12)
+  - address_hex: '0x1103'
+    address: 4355
+    name: 预约定时任务1时间（日/时）
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint8_pair
+    access: RW
+    fc_write: '0x10'
+    note: 高字节=日(1~31)，低字节=时(0~23)
+  - address_hex: '0x1104'
+    address: 4356
+    name: 预约定时任务1时间（分）/操作
+    kind: holding
+    fc_read: '0x03'
+    data_type: uint8_pair
+    access: RW
+    fc_write: '0x10'
+    note: 高字节=分(0~59)，低字节=操作（0=分，1=合）
+  - address_range_hex: '0x1105-0x1177'
+    address_range: [4357, 4471]
+    name: 预约定时任务2-24
+    kind: holding
+    fc_read: '0x03'
+    data_type: task5_registers
+    access: RW
+    fc_write: '0x10'
+    note: 每任务5个寄存器，结构同预约定时任务1；任务N起始地址=0x1100+(N-1)*5。
+
+  # 7.3.4 事件记录地址表（记录按表中连续区间重复）
+  - address_range_hex: '0x1200-0x1234'
+    address_range: [4608, 4660]
+    name: 开机关机记录1-10
+    kind: holding
+    fc_read: '0x03'
+    data_type: power_event_record
+    access: R
+    note: 记录1首地址0x1200：年/月、日/时、分/秒、类型/通道、预留；类型0x0F=开机、0xF0=关机，通道位bit0~bit7=通道1~8，0=分/1=合。后续记录区间以 PDF 原表为准。
+  - address_range_hex: '0x1300-0x1330'
+    address_range: [4864, 4912]
+    name: DI/DO记录1-12
+    kind: holding
+    fc_read: '0x03'
+    data_type: dido_event_record
+    access: R
+    note: 记录1首地址0x1300：年/月、日/时、分/秒、标志位/DI/DO状态；标志0xAA=记录存在，状态bit0=DI1、bit1=DI2、bit4=DO1、bit5=DO2，0=分/1=合。后续记录区间以 PDF 原表为准。
+  - address_range_hex: '0x1400-0x221F'
+    address_range: [5120, 8735]
+    name: 开关记录1-600
+    kind: holding
+    fc_read: '0x03'
+    data_type: switch_event_record
+    access: R
+    note: 记录1首地址0x1400：年/月、日/时、分/秒、来源/预留、通道号/状态、控制组地址；通道号0x01~0x08，状态0=分/1=合。该表说明开关记录共600条，后续记录按每条6寄存器递增；末地址据此推算为0x221F。
+register_layouts:
+  - name: 常规定时任务
+    count: 31
+    first_address_hex: '0x1007'
+    registers_per_task: 4
+  - name: 预约定时任务
+    count: 24
+    first_address_hex: '0x1101'
+    registers_per_task: 5
+  - name: 开机关机记录
+    count: 10
+    first_address_hex: '0x1200'
+    registers_per_record: 5
+  - name: DI/DO记录
+    count: 12
+    first_address_hex: '0x1300'
+    registers_per_record: 4
+  - name: 开关记录
+    count: 600
+    first_address_hex: '0x1400'
+    registers_per_record: 6

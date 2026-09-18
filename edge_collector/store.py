@@ -1,6 +1,7 @@
 import sqlite3
 import threading
 import time
+import os
 
 from .logutil import logger
 
@@ -10,6 +11,8 @@ class SQLiteStore:
         self.db_path = config["path"]
         self.max_records = config.get("max_records", 100000)
         self.max_retry = config.get("max_retry", 50)
+        directory = os.path.dirname(os.path.abspath(self.db_path))
+        os.makedirs(directory, exist_ok=True)
         self.lock = threading.Lock()
         self.conn = sqlite3.connect(self.db_path, check_same_thread=False)
         self.conn.execute("PRAGMA journal_mode=WAL")

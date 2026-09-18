@@ -143,7 +143,7 @@ class MQTTManager:
         if not self.connected:
             return False
         try:
-            info = self.client.publish(topic, payload, qos=1, retain=False)
+            info = self.client.publish(topic, payload, qos=int(self.config.get("qos", 0)), retain=False)
             if info.rc != mqtt.MQTT_ERR_SUCCESS:
                 return False
             return True

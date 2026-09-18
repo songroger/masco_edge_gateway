@@ -1,1258 +1,1080 @@
 {
-  "device_id": "EDGE_001",
-
+  "gateway": {
+    "id": "gateway-001",
+    "sn": "GW-003",
+    "timezone": "Asia/Shanghai",
+    "log_level": "info"
+  },
   "mqtt": {
-    "host": "118.178.58.233",
-    "port": 1883,
+    "broker": "tcp://118.178.58.233:1883",
     "username": "masco",
     "password": "masco",
-    "client_id": "EDGE_001",
-    "topic": "iot/device/EDGE_001/data",
-    "config_topic": "iot/device/EDGE_001/config",
-    "config_ack_topic": "iot/device/EDGE_001/config/ack",
-    "alarm_topic": "iot/device/EDGE_001/alarm",
-    "offline_sync_batch": 100,
-    "keepalive": 60,
+    "qos": 1,
+    "keep_alive_sec": 30,
+    "reconnect_sec": 5,
+    "connect_timeout_sec": 10,
     "tls": {
-      "enable": false,
-      "ca_certs": "/etc/edge_collector/certs/ca.crt",
-      "certfile": "",
-      "keyfile": "",
-      "insecure": false
-    }
-  },
-
-  "database": {
-    "path": "./edge_collector.db",
-    "max_records": 100000,
-    "max_retry": 50
-  },
-
-  "collect": {
-    "interval": 10,
-    "upload_interval": 60,
-    "request_timeout": 2,
-    "retry": 2,
-    "batch_max_gap": 32,
-    "batch_max_count": 125,
-    "batch_max_gap_bits": 64,
-    "batch_max_count_bits": 256
-  },
-
-  "watchdog": {
-    "enable": true,
-    "mqtt_restart_after": 3,
-    "rs485_restart_after": 3,
-    "sqlite_restart_after": 1
-  },
-
-  "gpio": {
-    "chip": "/dev/gpiochip0",
-    "consumer": "edge-collector"
-  },
-
-  "serial_ports": [
-    {
-      "name": "RS485_1",
-      "port": "/dev/ttyS3",
-      "baudrate": 115200,
-      "bytesize": 8,
-      "parity": "N",
-      "stopbits": 1,
-      "timeout": 2,
-      "devices": [
-        {
-          "slave_id": 1,
-          "model": "MPPT_G3",
-          "parameters": [
-            {
-              "name": "charge_switch",
-              "address": "0x0000",
-              "register_type": "coil",
-              "data_type": "bool",
-              "scale": 1,
-              "unit": ""
-            },
-            {
-              "name": "load_manual_switch",
-              "address": "0x0002",
-              "register_type": "coil",
-              "data_type": "bool",
-              "scale": 1,
-              "unit": ""
-            },
-            {
-              "name": "device_over_temp",
-              "address": "0x2000",
-              "register_type": "discrete",
-              "data_type": "bool",
-              "scale": 1,
-              "unit": ""
-            },
-            {
-              "name": "power_device_over_temp",
-              "address": "0x2001",
-              "register_type": "discrete",
-              "data_type": "bool",
-              "scale": 1,
-              "unit": ""
-            },
-            {
-              "name": "pv_rated_voltage",
-              "address": "0x3000",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "V"
-            },
-            {
-              "name": "pv_rated_current",
-              "address": "0x3001",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "A"
-            },
-            {
-              "name": "pv_rated_power",
-              "address": "0x3002",
-              "register_type": "input",
-              "data_type": "uint32",
-              "byte_order": "CDAB",
-              "scale": 0.01,
-              "unit": "W"
-            },
-            {
-              "name": "battery_rated_voltage",
-              "address": "0x3004",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "V"
-            },
-            {
-              "name": "battery_rated_charge_current",
-              "address": "0x3005",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "A"
-            },
-            {
-              "name": "battery_rated_charge_power",
-              "address": "0x3006",
-              "register_type": "input",
-              "data_type": "uint32",
-              "byte_order": "CDAB",
-              "scale": 0.01,
-              "unit": "W"
-            },
-            {
-              "name": "load_rated_current",
-              "address": "0x300E",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "A"
-            },
-            {
-              "name": "pv_voltage",
-              "address": "0x3100",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "V"
-            },
-            {
-              "name": "pv_current",
-              "address": "0x3101",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "A"
-            },
-            {
-              "name": "pv_power",
-              "address": "0x3102",
-              "register_type": "input",
-              "data_type": "uint32",
-              "byte_order": "CDAB",
-              "scale": 0.01,
-              "unit": "W"
-            },
-            {
-              "name": "pv_output_voltage",
-              "address": "0x3104",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "V"
-            },
-            {
-              "name": "pv_output_current",
-              "address": "0x3105",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "A"
-            },
-            {
-              "name": "pv_output_power",
-              "address": "0x3106",
-              "register_type": "input",
-              "data_type": "uint32",
-              "byte_order": "CDAB",
-              "scale": 0.01,
-              "unit": "W"
-            },
-            {
-              "name": "battery_voltage",
-              "address": "0x3108",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "V"
-            },
-            {
-              "name": "battery_current",
-              "address": "0x3109",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "A"
-            },
-            {
-              "name": "battery_power",
-              "address": "0x310A",
-              "register_type": "input",
-              "data_type": "uint32",
-              "byte_order": "CDAB",
-              "scale": 0.01,
-              "unit": "W"
-            },
-            {
-              "name": "load_voltage",
-              "address": "0x310C",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "V"
-            },
-            {
-              "name": "load_current",
-              "address": "0x310D",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "A"
-            },
-            {
-              "name": "load_power",
-              "address": "0x310E",
-              "register_type": "input",
-              "data_type": "uint32",
-              "byte_order": "CDAB",
-              "scale": 0.01,
-              "unit": "W"
-            },
-            {
-              "name": "remote_battery_temp",
-              "address": "0x3110",
-              "register_type": "input",
-              "data_type": "int16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "℃"
-            },
-            {
-              "name": "device_temp",
-              "address": "0x3111",
-              "register_type": "input",
-              "data_type": "int16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "℃"
-            },
-            {
-              "name": "mos_temp",
-              "address": "0x3112",
-              "register_type": "input",
-              "data_type": "int16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "℃"
-            },
-            {
-              "name": "battery_soc",
-              "address": "0x311A",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 1,
-              "unit": "%"
-            },
-            {
-              "name": "system_voltage",
-              "address": "0x311D",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "V"
-            },
-            {
-              "name": "battery_status",
-              "address": "0x3200",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 1,
-              "unit": ""
-            },
-            {
-              "name": "charge_status",
-              "address": "0x3201",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 1,
-              "unit": ""
-            },
-            {
-              "name": "discharge_status",
-              "address": "0x3202",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 1,
-              "unit": ""
-            },
-            {
-              "name": "today_pv_max_voltage",
-              "address": "0x3300",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "V"
-            },
-            {
-              "name": "today_pv_min_voltage",
-              "address": "0x3301",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "V"
-            },
-            {
-              "name": "today_battery_max_voltage",
-              "address": "0x3302",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "V"
-            },
-            {
-              "name": "today_battery_min_voltage",
-              "address": "0x3303",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "V"
-            },
-            {
-              "name": "today_consumed_energy",
-              "address": "0x3304",
-              "register_type": "input",
-              "data_type": "uint32",
-              "byte_order": "CDAB",
-              "scale": 0.01,
-              "unit": "kWh"
-            },
-            {
-              "name": "month_consumed_energy",
-              "address": "0x3306",
-              "register_type": "input",
-              "data_type": "uint32",
-              "byte_order": "CDAB",
-              "scale": 0.01,
-              "unit": "kWh"
-            },
-            {
-              "name": "year_consumed_energy",
-              "address": "0x3308",
-              "register_type": "input",
-              "data_type": "uint32",
-              "byte_order": "CDAB",
-              "scale": 0.01,
-              "unit": "kWh"
-            },
-            {
-              "name": "total_consumed_energy",
-              "address": "0x330A",
-              "register_type": "input",
-              "data_type": "uint32",
-              "byte_order": "CDAB",
-              "scale": 0.01,
-              "unit": "kWh"
-            },
-            {
-              "name": "today_generated_energy",
-              "address": "0x330C",
-              "register_type": "input",
-              "data_type": "uint32",
-              "byte_order": "CDAB",
-              "scale": 0.01,
-              "unit": "kWh"
-            },
-            {
-              "name": "month_generated_energy",
-              "address": "0x330E",
-              "register_type": "input",
-              "data_type": "uint32",
-              "byte_order": "CDAB",
-              "scale": 0.01,
-              "unit": "kWh"
-            },
-            {
-              "name": "year_generated_energy",
-              "address": "0x3310",
-              "register_type": "input",
-              "data_type": "uint32",
-              "byte_order": "CDAB",
-              "scale": 0.01,
-              "unit": "kWh"
-            },
-            {
-              "name": "total_generated_energy",
-              "address": "0x3312",
-              "register_type": "input",
-              "data_type": "uint32",
-              "byte_order": "CDAB",
-              "scale": 0.01,
-              "unit": "kWh"
-            },
-            {
-              "name": "battery_total_discharge_current",
-              "address": "0x3318",
-              "register_type": "input",
-              "data_type": "uint32",
-              "byte_order": "CDAB",
-              "scale": 0.01,
-              "unit": "A"
-            },
-            {
-              "name": "battery_total_current",
-              "address": "0x331B",
-              "register_type": "input",
-              "data_type": "uint32",
-              "byte_order": "CDAB",
-              "scale": 0.01,
-              "unit": "A"
-            },
-            {
-              "name": "pack_cell_count",
-              "address": "0x3400",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 1,
-              "unit": ""
-            },
-            {
-              "name": "pack_voltage",
-              "address": "0x3401",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "V"
-            },
-            {
-              "name": "pack_current",
-              "address": "0x3402",
-              "register_type": "input",
-              "data_type": "int16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "A"
-            },
-            {
-              "name": "pack_power",
-              "address": "0x3403",
-              "register_type": "input",
-              "data_type": "uint32",
-              "byte_order": "CDAB",
-              "scale": 0.01,
-              "unit": "W"
-            },
-            {
-              "name": "pack_full_capacity",
-              "address": "0x3405",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 1,
-              "unit": "Ah"
-            },
-            {
-              "name": "pack_soc",
-              "address": "0x3406",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 1,
-              "unit": "%"
-            },
-            {
-              "name": "pack_remaining_minutes",
-              "address": "0x3407",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 1,
-              "unit": "min"
-            },
-            {
-              "name": "pack_cell_temp_max",
-              "address": "0x3408",
-              "register_type": "input",
-              "data_type": "int16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "℃"
-            },
-            {
-              "name": "pack_cell_temp_min",
-              "address": "0x3409",
-              "register_type": "input",
-              "data_type": "int16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "℃"
-            },
-            {
-              "name": "pack_balance_temp",
-              "address": "0x340A",
-              "register_type": "input",
-              "data_type": "int16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "℃"
-            },
-            {
-              "name": "pack_ambient_temp",
-              "address": "0x340B",
-              "register_type": "input",
-              "data_type": "int16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "℃"
-            },
-            {
-              "name": "pack_mos_temp",
-              "address": "0x340C",
-              "register_type": "input",
-              "data_type": "int16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "℃"
-            },
-            {
-              "name": "pack_cycle_count",
-              "address": "0x340D",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 1,
-              "unit": ""
-            },
-            {
-              "name": "pack_balance_flag",
-              "address": "0x340E",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 1,
-              "unit": ""
-            },
-            {
-              "name": "pack_voltage_status",
-              "address": "0x340F",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 1,
-              "unit": ""
-            },
-            {
-              "name": "pack_current_status",
-              "address": "0x3410",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 1,
-              "unit": ""
-            },
-            {
-              "name": "pack_mos_status",
-              "address": "0x3411",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 1,
-              "unit": ""
-            },
-            {
-              "name": "battery_type",
-              "address": "0x9000",
-              "register_type": "holding",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 1,
-              "unit": ""
-            },
-            {
-              "name": "battery_capacity",
-              "address": "0x9001",
-              "register_type": "holding",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 1,
-              "unit": "Ah"
-            },
-            {
-              "name": "over_voltage_disconnect",
-              "address": "0x9003",
-              "register_type": "holding",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "V"
-            },
-            {
-              "name": "charging_limit_voltage",
-              "address": "0x9004",
-              "register_type": "holding",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "V"
-            },
-            {
-              "name": "low_voltage_disconnect",
-              "address": "0x900D",
-              "register_type": "holding",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "V"
-            },
-            {
-              "name": "load_control_mode",
-              "address": "0x903D",
-              "register_type": "holding",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 1,
-              "unit": ""
-            },
-            {
-              "name": "max_charge_current",
-              "address": "0x90BF",
-              "register_type": "holding",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "A"
-            }
-          ]
-        }
-      ]
+      "enabled": false,
+      "ca_file": "",
+      "cert_file": "",
+      "key_file": "",
+      "insecure_skip_verify": false
     },
-    {
-      "name": "RS485_2",
-      "port": "/dev/ttyS1",
-      "baudrate": 115200,
-      "bytesize": 8,
-      "parity": "N",
-      "stopbits": 1,
-      "timeout": 2,
-      "devices": [
-        {
-          "slave_id": 3,
-          "model": "IPOWER_PLUS",
-          "parameters": [
-            {
-              "name": "clear_fault",
-              "address": "0x0013",
-              "register_type": "coil",
-              "data_type": "bool",
-              "scale": 1,
-              "unit": ""
-            },
-            {
-              "name": "remote_control",
-              "address": "0x0011",
-              "register_type": "coil",
-              "data_type": "bool",
-              "scale": 1,
-              "unit": ""
-            },
-            {
-              "name": "inverter_run",
-              "address": "0x000F",
-              "register_type": "coil",
-              "data_type": "bool",
-              "scale": 1,
-              "unit": ""
-            },
-            {
-              "name": "power_save_enable",
-              "address": "0x0004",
-              "register_type": "coil",
-              "data_type": "bool",
-              "scale": 1,
-              "unit": ""
-            },
-            {
-              "name": "device_over_temp",
-              "address": "0x2000",
-              "register_type": "discrete",
-              "data_type": "bool",
-              "scale": 1,
-              "unit": ""
-            },
-            {
-              "name": "input_voltage",
-              "address": "0x3108",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "V"
-            },
-            {
-              "name": "input_current",
-              "address": "0x3109",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "A"
-            },
-            {
-              "name": "input_power",
-              "address": "0x310A",
-              "register_type": "input",
-              "data_type": "uint32",
-              "byte_order": "CDAB",
-              "scale": 0.01,
-              "unit": "W"
-            },
-            {
-              "name": "output_voltage",
-              "address": "0x310C",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "V"
-            },
-            {
-              "name": "output_current",
-              "address": "0x310D",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "A"
-            },
-            {
-              "name": "output_power",
-              "address": "0x310E",
-              "register_type": "input",
-              "data_type": "uint32",
-              "byte_order": "CDAB",
-              "scale": 0.01,
-              "unit": "W"
-            },
-            {
-              "name": "device_temp",
-              "address": "0x3111",
-              "register_type": "input",
-              "data_type": "int16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "℃"
-            },
-            {
-              "name": "heatsink_temp",
-              "address": "0x3112",
-              "register_type": "input",
-              "data_type": "int16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "℃"
-            },
-            {
-              "name": "device_status",
-              "address": "0x3202",
-              "register_type": "input",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 1,
-              "unit": ""
-            },
-            {
-              "name": "ac_voltage_set",
-              "address": "0x9022",
-              "register_type": "holding",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "V"
-            },
-            {
-              "name": "ac_frequency_set",
-              "address": "0x9023",
-              "register_type": "holding",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "Hz"
-            },
-            {
-              "name": "vin_low_limit",
-              "address": "0x902F",
-              "register_type": "holding",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "V"
-            },
-            {
-              "name": "vin_low_limit_5s",
-              "address": "0x9030",
-              "register_type": "holding",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "V"
-            },
-            {
-              "name": "vin_low_recover",
-              "address": "0x9031",
-              "register_type": "holding",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "V"
-            },
-            {
-              "name": "vin_high_recover",
-              "address": "0x9032",
-              "register_type": "holding",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "V"
-            },
-            {
-              "name": "vin_high_limit_5s",
-              "address": "0x9033",
-              "register_type": "holding",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "V"
-            },
-            {
-              "name": "vin_high_limit",
-              "address": "0x9034",
-              "register_type": "holding",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "V"
-            },
-            {
-              "name": "iin_high_limit",
-              "address": "0x9035",
-              "register_type": "holding",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "A"
-            },
-            {
-              "name": "iin_high_recover",
-              "address": "0x9036",
-              "register_type": "holding",
-              "data_type": "uint16",
-              "byte_order": "AB",
-              "scale": 0.01,
-              "unit": "A"
-            }
-          ]
-        }
-      ]
+    "topics": {
+      "telemetry": "light/gateway/data",
+      "event": "light/gateway/event",
+      "command": "light/gateway/command",
+      "config": "light/gateway/config",
+      "refresh": "light/gateway/refresh"
     }
-  ],
-
+  },
+  "database": {
+    "path": "./data/gateway.db",
+    "max_rows": 200000,
+    "max_age_days": 30,
+    "sync_batch_size": 100,
+    "vacuum_interval_hours": 24
+  },
+  "collector": {
+    "default_poll_ms": 60000,
+    "request_timeout_ms": 1000,
+    "retries": 2,
+    "retry_delay_ms": 100,
+    "inter_frame_delay_ms": 20,
+    "offline_fail_count": 2,
+    "batch_max_gap": 0,
+    "batch_max_span": 64,
+    "channels": [
+      {
+        "id": "rs485-1",
+        "enabled": true,
+        "device": "/dev/ttyS1",
+        "baud_rate": 9600,
+        "data_bits": 8,
+        "stop_bits": 1,
+        "parity": "N",
+        "poll_ms": 60000,
+        "devices": [
+          {
+            "id": "light-control",
+            "slave_id": 1,
+            "points": [
+              {
+                "name": "rtc_year_month",
+                "function": 3,
+                "address": 0,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "rtc_day_hour",
+                "function": 3,
+                "address": 1,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "rtc_min_sec",
+                "function": 3,
+                "address": 2,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "rtc_weekday_reserved",
+                "function": 3,
+                "address": 3,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "di_status",
+                "function": 3,
+                "address": 4,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "do_status",
+                "function": 3,
+                "address": 5,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "ch1_8_switch_status",
+                "function": 3,
+                "address": 7,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "ch1_8_close_bits",
+                "function": 3,
+                "address": 9,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "ch1_8_open_bits",
+                "function": 3,
+                "address": 11,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "ch1_status",
+                "function": 3,
+                "address": 12,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "ch2_status",
+                "function": 3,
+                "address": 13,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "ch3_status",
+                "function": 3,
+                "address": 14,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "ch4_status",
+                "function": 3,
+                "address": 15,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "ch5_status",
+                "function": 3,
+                "address": 16,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "ch6_status",
+                "function": 3,
+                "address": 17,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "ch7_status",
+                "function": 3,
+                "address": 18,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "ch8_status",
+                "function": 3,
+                "address": 19,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "ch1_current",
+                "function": 3,
+                "address": 36,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 0.01,
+                "unit": "A"
+              },
+              {
+                "name": "ch2_current",
+                "function": 3,
+                "address": 37,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 0.01,
+                "unit": "A"
+              },
+              {
+                "name": "ch3_current",
+                "function": 3,
+                "address": 38,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 0.01,
+                "unit": "A"
+              },
+              {
+                "name": "ch4_current",
+                "function": 3,
+                "address": 39,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 0.01,
+                "unit": "A"
+              },
+              {
+                "name": "ch5_current",
+                "function": 3,
+                "address": 40,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 0.01,
+                "unit": "A"
+              },
+              {
+                "name": "ch6_current",
+                "function": 3,
+                "address": 41,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 0.01,
+                "unit": "A"
+              },
+              {
+                "name": "ch7_current",
+                "function": 3,
+                "address": 42,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 0.01,
+                "unit": "A"
+              },
+              {
+                "name": "ch8_current",
+                "function": 3,
+                "address": 43,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 0.01,
+                "unit": "A"
+              },
+              {
+                "name": "ch1_current_thd",
+                "function": 3,
+                "address": 60,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 0.1,
+                "unit": "%"
+              },
+              {
+                "name": "ch2_current_thd",
+                "function": 3,
+                "address": 61,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 0.1,
+                "unit": "%"
+              },
+              {
+                "name": "ch3_current_thd",
+                "function": 3,
+                "address": 62,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 0.1,
+                "unit": "%"
+              },
+              {
+                "name": "ch4_current_thd",
+                "function": 3,
+                "address": 63,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 0.1,
+                "unit": "%"
+              },
+              {
+                "name": "ch5_current_thd",
+                "function": 3,
+                "address": 64,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 0.1,
+                "unit": "%"
+              },
+              {
+                "name": "ch6_current_thd",
+                "function": 3,
+                "address": 65,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 0.1,
+                "unit": "%"
+              },
+              {
+                "name": "ch7_current_thd",
+                "function": 3,
+                "address": 66,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 0.1,
+                "unit": "%"
+              },
+              {
+                "name": "ch8_current_thd",
+                "function": 3,
+                "address": 67,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 0.1,
+                "unit": "%"
+              },
+              {
+                "name": "ch1_active_power",
+                "function": 3,
+                "address": 84,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 0.001,
+                "unit": "kW"
+              },
+              {
+                "name": "ch2_active_power",
+                "function": 3,
+                "address": 85,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 0.001,
+                "unit": "kW"
+              },
+              {
+                "name": "ch3_active_power",
+                "function": 3,
+                "address": 86,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 0.001,
+                "unit": "kW"
+              },
+              {
+                "name": "ch4_active_power",
+                "function": 3,
+                "address": 87,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 0.001,
+                "unit": "kW"
+              },
+              {
+                "name": "ch5_active_power",
+                "function": 3,
+                "address": 88,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 0.001,
+                "unit": "kW"
+              },
+              {
+                "name": "ch6_active_power",
+                "function": 3,
+                "address": 89,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 0.001,
+                "unit": "kW"
+              },
+              {
+                "name": "ch7_active_power",
+                "function": 3,
+                "address": 90,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 0.001,
+                "unit": "kW"
+              },
+              {
+                "name": "ch8_active_power",
+                "function": 3,
+                "address": 91,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 0.001,
+                "unit": "kW"
+              },
+              {
+                "name": "ch1_active_energy",
+                "function": 3,
+                "address": 108,
+                "quantity": 2,
+                "data_type": "uint32",
+                "scale": 0.001,
+                "unit": "kWh"
+              },
+              {
+                "name": "ch2_active_energy",
+                "function": 3,
+                "address": 110,
+                "quantity": 2,
+                "data_type": "uint32",
+                "scale": 0.001,
+                "unit": "kWh"
+              },
+              {
+                "name": "ch3_active_energy",
+                "function": 3,
+                "address": 112,
+                "quantity": 2,
+                "data_type": "uint32",
+                "scale": 0.001,
+                "unit": "kWh"
+              },
+              {
+                "name": "ch4_active_energy",
+                "function": 3,
+                "address": 114,
+                "quantity": 2,
+                "data_type": "uint32",
+                "scale": 0.001,
+                "unit": "kWh"
+              },
+              {
+                "name": "ch5_active_energy",
+                "function": 3,
+                "address": 116,
+                "quantity": 2,
+                "data_type": "uint32",
+                "scale": 0.001,
+                "unit": "kWh"
+              },
+              {
+                "name": "ch6_active_energy",
+                "function": 3,
+                "address": 118,
+                "quantity": 2,
+                "data_type": "uint32",
+                "scale": 0.001,
+                "unit": "kWh"
+              },
+              {
+                "name": "ch7_active_energy",
+                "function": 3,
+                "address": 120,
+                "quantity": 2,
+                "data_type": "uint32",
+                "scale": 0.001,
+                "unit": "kWh"
+              },
+              {
+                "name": "ch8_active_energy",
+                "function": 3,
+                "address": 122,
+                "quantity": 2,
+                "data_type": "uint32",
+                "scale": 0.001,
+                "unit": "kWh"
+              },
+              {
+                "name": "ch1_relay_on_time",
+                "function": 3,
+                "address": 156,
+                "quantity": 2,
+                "data_type": "uint32",
+                "scale": 1,
+                "unit": "s"
+              },
+              {
+                "name": "ch2_relay_on_time",
+                "function": 3,
+                "address": 158,
+                "quantity": 2,
+                "data_type": "uint32",
+                "scale": 1,
+                "unit": "s"
+              },
+              {
+                "name": "ch3_relay_on_time",
+                "function": 3,
+                "address": 160,
+                "quantity": 2,
+                "data_type": "uint32",
+                "scale": 1,
+                "unit": "s"
+              },
+              {
+                "name": "ch4_relay_on_time",
+                "function": 3,
+                "address": 162,
+                "quantity": 2,
+                "data_type": "uint32",
+                "scale": 1,
+                "unit": "s"
+              },
+              {
+                "name": "ch5_relay_on_time",
+                "function": 3,
+                "address": 164,
+                "quantity": 2,
+                "data_type": "uint32",
+                "scale": 1,
+                "unit": "s"
+              },
+              {
+                "name": "ch6_relay_on_time",
+                "function": 3,
+                "address": 166,
+                "quantity": 2,
+                "data_type": "uint32",
+                "scale": 1,
+                "unit": "s"
+              },
+              {
+                "name": "ch7_relay_on_time",
+                "function": 3,
+                "address": 168,
+                "quantity": 2,
+                "data_type": "uint32",
+                "scale": 1,
+                "unit": "s"
+              },
+              {
+                "name": "ch8_relay_on_time",
+                "function": 3,
+                "address": 170,
+                "quantity": 2,
+                "data_type": "uint32",
+                "scale": 1,
+                "unit": "s"
+              },
+              {
+                "name": "ch1_relay_on_count",
+                "function": 3,
+                "address": 204,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1,
+                "unit": "count"
+              },
+              {
+                "name": "ch2_relay_on_count",
+                "function": 3,
+                "address": 205,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1,
+                "unit": "count"
+              },
+              {
+                "name": "ch3_relay_on_count",
+                "function": 3,
+                "address": 206,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1,
+                "unit": "count"
+              },
+              {
+                "name": "ch4_relay_on_count",
+                "function": 3,
+                "address": 207,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1,
+                "unit": "count"
+              },
+              {
+                "name": "ch5_relay_on_count",
+                "function": 3,
+                "address": 208,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1,
+                "unit": "count"
+              },
+              {
+                "name": "ch6_relay_on_count",
+                "function": 3,
+                "address": 209,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1,
+                "unit": "count"
+              },
+              {
+                "name": "ch7_relay_on_count",
+                "function": 3,
+                "address": 210,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1,
+                "unit": "count"
+              },
+              {
+                "name": "ch8_relay_on_count",
+                "function": 3,
+                "address": 211,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1,
+                "unit": "count"
+              },
+              {
+                "name": "voltage_a",
+                "function": 3,
+                "address": 228,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 0.1,
+                "unit": "V"
+              },
+              {
+                "name": "voltage_b",
+                "function": 3,
+                "address": 229,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 0.1,
+                "unit": "V"
+              },
+              {
+                "name": "voltage_c",
+                "function": 3,
+                "address": 230,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 0.1,
+                "unit": "V"
+              },
+              {
+                "name": "voltage_freq",
+                "function": 3,
+                "address": 231,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 0.01,
+                "unit": "Hz"
+              },
+              {
+                "name": "slave_address",
+                "function": 3,
+                "address": 257,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "baud_rate",
+                "function": 3,
+                "address": 259,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "di1_link_func_mode",
+                "function": 3,
+                "address": 260,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "di1_link_channels",
+                "function": 3,
+                "address": 262,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "di1_link_action",
+                "function": 3,
+                "address": 264,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "di2_link_func_mode",
+                "function": 3,
+                "address": 265,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "di2_link_channels",
+                "function": 3,
+                "address": 267,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "di2_link_action",
+                "function": 3,
+                "address": 269,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "longitude",
+                "function": 3,
+                "address": 4096,
+                "quantity": 2,
+                "data_type": "float32",
+                "scale": 1
+              },
+              {
+                "name": "latitude",
+                "function": 3,
+                "address": 4098,
+                "quantity": 2,
+                "data_type": "float32",
+                "scale": 1
+              },
+              {
+                "name": "sunrise_hour_min",
+                "function": 3,
+                "address": 4100,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "sunset_hour_min",
+                "function": 3,
+                "address": 4101,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "timer_task1_channels",
+                "function": 3,
+                "address": 4103,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "timer_task1_weekday_hour",
+                "function": 3,
+                "address": 4104,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "timer_task1_min_action",
+                "function": 3,
+                "address": 4105,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "timer_task2_channels",
+                "function": 3,
+                "address": 4107,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "timer_task2_weekday_hour",
+                "function": 3,
+                "address": 4108,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "timer_task2_min_action",
+                "function": 3,
+                "address": 4109,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "timer_task3_channels",
+                "function": 3,
+                "address": 4111,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "timer_task3_weekday_hour",
+                "function": 3,
+                "address": 4112,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "timer_task3_min_action",
+                "function": 3,
+                "address": 4113,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "timer_task4_channels",
+                "function": 3,
+                "address": 4115,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "timer_task4_weekday_hour",
+                "function": 3,
+                "address": 4116,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "timer_task4_min_action",
+                "function": 3,
+                "address": 4117,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "timer_task5_channels",
+                "function": 3,
+                "address": 4119,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "timer_task5_weekday_hour",
+                "function": 3,
+                "address": 4120,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "timer_task5_min_action",
+                "function": 3,
+                "address": 4121,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "sched_task1_channels",
+                "function": 3,
+                "address": 4353,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "sched_task1_year_month",
+                "function": 3,
+                "address": 4354,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "sched_task1_day_hour",
+                "function": 3,
+                "address": 4355,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "sched_task1_min_action",
+                "function": 3,
+                "address": 4356,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "sched_task2_channels",
+                "function": 3,
+                "address": 4357,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "sched_task2_year_month",
+                "function": 3,
+                "address": 4358,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "sched_task2_day_hour",
+                "function": 3,
+                "address": 4359,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "sched_task2_min_action",
+                "function": 3,
+                "address": 4360,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "sched_task3_channels",
+                "function": 3,
+                "address": 4362,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "sched_task3_year_month",
+                "function": 3,
+                "address": 4363,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "sched_task3_day_hour",
+                "function": 3,
+                "address": 4364,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "sched_task3_min_action",
+                "function": 3,
+                "address": 4365,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "sched_task4_channels",
+                "function": 3,
+                "address": 4367,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "sched_task4_year_month",
+                "function": 3,
+                "address": 4368,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "sched_task4_day_hour",
+                "function": 3,
+                "address": 4369,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "sched_task4_min_action",
+                "function": 3,
+                "address": 4370,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "sched_task5_channels",
+                "function": 3,
+                "address": 4372,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "sched_task5_year_month",
+                "function": 3,
+                "address": 4373,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "sched_task5_day_hour",
+                "function": 3,
+                "address": 4374,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              },
+              {
+                "name": "sched_task5_min_action",
+                "function": 3,
+                "address": 4375,
+                "quantity": 1,
+                "data_type": "uint16",
+                "scale": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "rs485-2",
+        "enabled": false,
+        "device": "/dev/ttyS2",
+        "baud_rate": 9600,
+        "data_bits": 8,
+        "stop_bits": 1,
+        "parity": "N",
+        "poll_ms": 1000,
+        "devices": []
+      }
+    ]
+  },
   "rules": [
     {
-      "name": "device_over_temp_stop_charge",
-      "type": "threshold",
-      "source": "RS485_1:1:device_over_temp",
-      "operator": "==",
-      "threshold": 1,
-      "consecutive": 2,
-      "action": {
-        "type": "dual",
-        "alarm": {
-          "severity": "critical",
-          "code": "DEVICE_OVER_TEMP",
-          "message": "MPPT device over-temperature, stop charging"
-        },
-        "modbus": {
-          "port": "RS485_1",
-          "slave_id": 1,
-          "register_type": "coil",
-          "address": "0x0000",
-          "value": 0
-        },
-        "gpio": {
-          "line": 17,
-          "value": 1
-        }
-      }
-    },
-    {
-      "name": "high_device_temp_stop_charge",
-      "type": "threshold",
-      "source": "RS485_1:1:device_temp",
-      "operator": ">=",
-      "threshold": 75,
+      "id": "communication-failure",
+      "enabled": false,
+      "channel_id": "rs485-2",
+      "device_id": "temp-001",
+      "point_name": "temperature",
+      "operator": "COMM_ERROR",
+      "threshold": 3,
       "consecutive": 3,
+      "cooldown_sec": 60,
       "action": {
-        "type": "dual",
-        "alarm": {
-          "severity": "critical",
-          "code": "HIGH_DEVICE_TEMP",
-          "message": "MPPT device temperature too high, stop charging"
-        },
-        "modbus": {
-          "port": "RS485_1",
-          "slave_id": 1,
-          "register_type": "coil",
-          "address": "0x0000",
-          "value": 0
-        },
-        "gpio": {
-          "line": 17,
-          "value": 1
-        }
-      }
-    },
-    {
-      "name": "battery_over_voltage_stop_charge",
-      "type": "threshold",
-      "source": "RS485_1:1:battery_voltage",
-      "operator": ">=",
-      "threshold": 58,
-      "consecutive": 3,
-      "action": {
-        "type": "dual",
-        "alarm": {
-          "severity": "critical",
-          "code": "BATTERY_OVER_VOLTAGE",
-          "message": "Battery over-voltage, stop charging"
-        },
-        "modbus": {
-          "port": "RS485_1",
-          "slave_id": 1,
-          "register_type": "coil",
-          "address": "0x0000",
-          "value": 0
-        },
-        "gpio": {
-          "line": 17,
-          "value": 1
-        }
-      }
-    },
-    {
-      "name": "low_soc_stop_load",
-      "type": "threshold",
-      "source": "RS485_1:1:battery_soc",
-      "operator": "<=",
-      "threshold": 20,
-      "consecutive": 3,
-      "action": {
-        "type": "dual",
-        "alarm": {
-          "severity": "warning",
-          "code": "LOW_SOC",
-          "message": "Battery SOC low, turn off load output"
-        },
-        "modbus": {
-          "port": "RS485_1",
-          "slave_id": 1,
-          "register_type": "coil",
-          "address": "0x0002",
-          "value": 0
-        },
-        "gpio": {
-          "line": 17,
-          "value": 1
-        }
-      }
-    },
-    {
-      "name": "over_load_current_stop_load",
-      "type": "threshold",
-      "source": "RS485_1:1:load_current",
-      "operator": ">",
-      "threshold": 20,
-      "consecutive": 2,
-      "action": {
-        "type": "dual",
-        "alarm": {
-          "severity": "critical",
-          "code": "OVER_LOAD_CURRENT",
-          "message": "Load over-current, turn off load output"
-        },
-        "modbus": {
-          "port": "RS485_1",
-          "slave_id": 1,
-          "register_type": "coil",
-          "address": "0x0002",
-          "value": 0
-        },
-        "gpio": {
-          "line": 17,
-          "value": 1
-        }
-      }
-    },
-    {
-      "name": "mppt_comm_fail",
-      "type": "comm_fail",
-      "source": "RS485_1:1",
-      "consecutive": 5,
-      "action": {
-        "type": "dual",
-        "alarm": {
-          "severity": "critical",
-          "code": "COMM_FAIL",
-          "message": "MPPT controller consecutive Modbus read failures"
-        },
-        "modbus": {
-          "port": "RS485_1",
-          "slave_id": 1,
-          "register_type": "coil",
-          "address": "0x0000",
-          "value": 0
-        },
-        "gpio": {
-          "line": 17,
-          "value": 1
-        }
-      }
-    },
-    {
-      "name": "inverter_over_temp_stop",
-      "type": "threshold",
-      "source": "RS485_2:3:device_over_temp",
-      "operator": "==",
-      "threshold": 1,
-      "consecutive": 2,
-      "action": {
-        "type": "dual",
-        "alarm": {
-          "severity": "critical",
-          "code": "INVERTER_OVER_TEMP",
-          "message": "Inverter over-temperature, stop output"
-        },
-        "modbus": [
-          {
-            "port": "RS485_2",
-            "slave_id": 3,
-            "register_type": "coil",
-            "address": "0x0011",
-            "value": 1
-          },
-          {
-            "port": "RS485_2",
-            "slave_id": 3,
-            "register_type": "coil",
-            "address": "0x000F",
-            "value": 0
-          }
-        ],
-        "gpio": {
-          "line": 17,
-          "value": 1
-        }
-      }
-    },
-    {
-      "name": "inverter_high_temp_stop",
-      "type": "threshold",
-      "source": "RS485_2:3:device_temp",
-      "operator": ">=",
-      "threshold": 75,
-      "consecutive": 3,
-      "action": {
-        "type": "dual",
-        "alarm": {
-          "severity": "critical",
-          "code": "INVERTER_HIGH_TEMP",
-          "message": "Inverter internal temperature too high, stop output"
-        },
-        "modbus": [
-          {
-            "port": "RS485_2",
-            "slave_id": 3,
-            "register_type": "coil",
-            "address": "0x0011",
-            "value": 1
-          },
-          {
-            "port": "RS485_2",
-            "slave_id": 3,
-            "register_type": "coil",
-            "address": "0x000F",
-            "value": 0
-          }
-        ],
-        "gpio": {
-          "line": 17,
-          "value": 1
-        }
-      }
-    },
-    {
-      "name": "inverter_over_current_stop",
-      "type": "threshold",
-      "source": "RS485_2:3:output_current",
-      "operator": ">",
-      "threshold": 20,
-      "consecutive": 2,
-      "action": {
-        "type": "dual",
-        "alarm": {
-          "severity": "critical",
-          "code": "INVERTER_OVER_CURRENT",
-          "message": "Inverter output over-current, stop output"
-        },
-        "modbus": [
-          {
-            "port": "RS485_2",
-            "slave_id": 3,
-            "register_type": "coil",
-            "address": "0x0011",
-            "value": 1
-          },
-          {
-            "port": "RS485_2",
-            "slave_id": 3,
-            "register_type": "coil",
-            "address": "0x000F",
-            "value": 0
-          }
-        ],
-        "gpio": {
-          "line": 17,
-          "value": 1
-        }
-      }
-    },
-    {
-      "name": "inverter_input_low_voltage_stop",
-      "type": "threshold",
-      "source": "RS485_2:3:input_voltage",
-      "operator": "<=",
-      "threshold": 42,
-      "consecutive": 3,
-      "action": {
-        "type": "dual",
-        "alarm": {
-          "severity": "critical",
-          "code": "INVERTER_INPUT_LOW",
-          "message": "Inverter DC input under-voltage, stop output"
-        },
-        "modbus": [
-          {
-            "port": "RS485_2",
-            "slave_id": 3,
-            "register_type": "coil",
-            "address": "0x0011",
-            "value": 1
-          },
-          {
-            "port": "RS485_2",
-            "slave_id": 3,
-            "register_type": "coil",
-            "address": "0x000F",
-            "value": 0
-          }
-        ],
-        "gpio": {
-          "line": 17,
-          "value": 1
-        }
-      }
-    },
-    {
-      "name": "inverter_comm_fail",
-      "type": "comm_fail",
-      "source": "RS485_2:3",
-      "consecutive": 5,
-      "action": {
-        "type": "dual",
-        "alarm": {
-          "severity": "critical",
-          "code": "COMM_FAIL",
-          "message": "Inverter consecutive Modbus read failures"
-        },
-        "modbus": [
-          {
-            "port": "RS485_2",
-            "slave_id": 3,
-            "register_type": "coil",
-            "address": "0x0011",
-            "value": 1
-          },
-          {
-            "port": "RS485_2",
-            "slave_id": 3,
-            "register_type": "coil",
-            "address": "0x000F",
-            "value": 0
-          }
-        ],
-        "gpio": {
-          "line": 17,
-          "value": 1
-        }
+        "type": "modbus_write",
+        "channel_id": "rs485-2",
+        "slave_id": 1,
+        "function": 16,
+        "address": 100,
+        "value": 0,
+        "description": "communication failure safe shutdown"
       }
     }
   ]

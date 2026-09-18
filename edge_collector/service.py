@@ -75,6 +75,8 @@ class CollectorService:
         self.store = reuse_store or SQLiteStore(self.config.database)
         self.ports = {}
         for port_config in self.config.serial_ports:
+            if not port_config.get("enabled", True):
+                continue
             merged = dict(port_config)
             merged["timeout"] = self._port_timeout(port_config)
             port = ModbusPort(merged)
@@ -224,12 +226,12 @@ class CollectorService:
         After reconnect, both Collector and RuleEngine are pointed at the
         updated ``self.ports`` map so the next cycle uses the new handles.
         """
-        names = [port_name] if port_name else [item["name"] for item in self.config.serial_ports]
+        names = [port_name] if port_name else [item["name"] for item in self.config.serial_ports if item.get("enabled", True)]
         for name in names:
             logger.warning("Recovering RS485 module: %s", name)
             try:
                 port_config = next(
-                    item for item in self.config.serial_ports if item["name"] == name
+                    item for item in self.config.serial_ports if item["name"] == name and item.get("enabled", True)
                 )
                 old = self.ports.get(name)
                 if old:
