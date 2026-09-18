@@ -27,7 +27,7 @@
     - `value`：保持寄存器点为 **Modbus 原始寄存器值**（不做 scale 换算）。例如通道调光 50% 下发 `50`（协议 0x0032）
 
     可写点位 = `config.json` 中已配置的点位 ∩ `docs/light-control.yaml` 中 `access: RW|W` 的单寄存器保持寄存器。
-    白名单实现：`internal/mqtt/command.go` → `ControllablePoints`；写地址仍以 config 为准。
+    写地址以 config 为准。
     只读点（电流/功率/电能等）、以及 `longitude`/`latitude`（float32 双寄存器）不接受本接口控制。
 
     | point | 地址 | 说明 |

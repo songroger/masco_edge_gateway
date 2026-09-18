@@ -189,6 +189,48 @@ class CollectorService:
         except Exception:
             logger.exception("Config ack publish failed")
 
+    def _handle_command(self):
+        command = self.mqtt.poll_command() if self.mqtt else None
+        if command is None:
+            return
+        result = {"sn": self.config.sn, "ok": False}
+        try:
+            if command.get("sn") != self.config.sn:
+                raise ValueError("command sn mismatch")
+            slave_id = int(command["slave_id"])
+            point_name = command["point"]
+            value = int(command["value"])
+            target = None
+            port = None
+            for channel in self.config.serial_ports:
+                for device in channel.get("devices", []):
+                    if device.get("slave_id") == slave_id:
+                        for point in device.get("parameters", []):
+                            if point.get("name") == point_name:
+                                target, port = point, self.ports.get(channel["name"])
+                                break
+            if not target or not port or target.get("register_type", "holding") != "holding" or target.get("quantity", 1) != 1:
+                raise ValueError("point is not a writable single holding register")
+            readonly = ("current", "thd", "active_power", "active_energy", "relay_on_time", "relay_on_count", "voltage_")
+            if point_name.startswith(readonly):
+                raise ValueError("point is read-only")
+            if not 0 <= value <= 65535:
+                raise ValueError("value out of uint16 range")
+            result["ok"] = bool(port.write_register(slave_id, int(target["address"]), value, "holding"))
+            if not result["ok"]:
+                raise ValueError("modbus write failed")
+        except Exception as exc:
+            result["message"] = str(exc)
+            logger.error("MQTT command rejected: %s", exc)
+        logger.info(
+            "MQTT command handled: sn=%s slave_id=%s point=%s ok=%s%s",
+            self.config.sn,
+            command.get("slave_id"),
+            command.get("point"),
+            result["ok"],
+            (" message=" + result["message"]) if result.get("message") else "",
+        )
+
     def _recover_sqlite(self):
         """Reopen or recreate the SQLite store and reattach it to MQTT."""
         logger.warning("Recovering SQLite module")
@@ -337,6 +379,7 @@ class CollectorService:
 
             try:
                 self._maybe_apply_remote_config()
+                self._handle_command()
             except Exception:
                 logger.exception("Config hot-reload step failed")
 

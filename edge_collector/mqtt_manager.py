@@ -13,6 +13,7 @@ class MQTTManager:
         self.store = store
         self.connected = False
         self._config_queue = queue.Queue()
+        self._command_queue = queue.Queue()
         self.client = self._create_client()
         self._configure_auth()
         self._configure_tls()
@@ -60,6 +61,10 @@ class MQTTManager:
             if config_topic:
                 client.subscribe(config_topic, qos=1)
                 logger.info("MQTT subscribed config topic: %s", config_topic)
+            command_topic = self.config.get("command_topic")
+            if command_topic:
+                client.subscribe(command_topic, qos=int(self.config.get("qos", 0)))
+                logger.info("MQTT subscribed command topic: %s", command_topic)
         else:
             self.connected = False
             logger.error("MQTT connect failed: %s", reason_code)
@@ -71,6 +76,13 @@ class MQTTManager:
 
     def on_message(self, client, userdata, message):
         config_topic = self.config.get("config_topic")
+        command_topic = self.config.get("command_topic")
+        if command_topic and message.topic == command_topic:
+            try:
+                self._command_queue.put(json.loads(message.payload.decode("utf-8")))
+            except Exception as exc:
+                logger.error("Invalid command payload: %s", exc)
+            return
         if not config_topic or message.topic != config_topic:
             return
         try:
@@ -86,6 +98,12 @@ class MQTTManager:
     def poll_config(self):
         try:
             return self._config_queue.get_nowait()
+        except queue.Empty:
+            return None
+
+    def poll_command(self):
+        try:
+            return self._command_queue.get_nowait()
         except queue.Empty:
             return None
 
@@ -196,8 +214,8 @@ class MQTTManager:
             bool(tls.get("enable")),
             tls.get("ca_certs"),
             tls.get("certfile"),
-            tls.get("keyfile"),
-            config.get("config_topic"),
+                 tls.get("keyfile"),
+            config.get("config_topic"), config.get("command_topic"),
         )
 
     def connection_signature(self):
