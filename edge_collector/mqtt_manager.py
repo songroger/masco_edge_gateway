@@ -60,15 +60,15 @@ class MQTTManager:
             logger.info("MQTT connected")
             config_topic = self.config.get("config_topic")
             if config_topic:
-                client.subscribe(config_topic, qos=1)
+                client.subscribe(config_topic, qos=int(self.config.get("qos", 1)))
                 logger.info("MQTT subscribed config topic: %s", config_topic)
             command_topic = self.config.get("command_topic")
             if command_topic:
-                client.subscribe(command_topic, qos=int(self.config.get("qos", 0)))
+                client.subscribe(command_topic, qos=int(self.config.get("qos", 1)))
                 logger.info("MQTT subscribed command topic: %s", command_topic)
             refresh_topic = self.config.get("refresh_topic")
             if refresh_topic:
-                client.subscribe(refresh_topic, qos=int(self.config.get("qos", 0)))
+                client.subscribe(refresh_topic, qos=int(self.config.get("qos", 1)))
                 logger.info("MQTT subscribed refresh topic: %s", refresh_topic)
         else:
             self.connected = False
